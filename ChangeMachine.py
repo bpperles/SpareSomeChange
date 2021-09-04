@@ -139,7 +139,14 @@ class BaseMachine(arcade.Sprite):
     # end Fill
 
     def DrawMachine(self):
-        x = 1
+        # Debug
+        drawPorts = False
+        if drawPorts:
+            # Debug: Draw the ports
+            if None != self.givePort:
+                self.givePort.DrawPort()
+            if None != self.takePort:
+                self.takePort.DrawPort()
     # end DrawMachine
     
     def UpdateMachine(self):
@@ -283,12 +290,8 @@ class TokenMachine(BaseMachine):
     # end Fill
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
-
+        super().DrawMachine()
+        
         # Draw held objects
         if True == self.displayHeldToken:
             self.heldTokenSpriteList.draw()
@@ -418,11 +421,7 @@ class PlayerTokenBin(BaseMachine):
     # end PlayerTake
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
+        super().DrawMachine()
 
         # Draw held objects
         if True == self.displayHeldToken:
@@ -538,11 +537,7 @@ class EnemyTokenBin(BaseMachine):
     # end PlayerTake
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
+        super().DrawMachine()
 
         # Draw held objects
         if True == self.displayHeldToken:
@@ -680,11 +675,7 @@ class CashRegister(BaseMachine):
     # end Fill
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
+        super().DrawMachine()
 
         # Draw held objects
         if True == self.displayHeldBill:
@@ -778,11 +769,7 @@ class Safe(BaseMachine):
     # end Fill
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
+        super().DrawMachine()
 
         # Draw held objects
         if True == self.displayHeldBag:
@@ -881,11 +868,7 @@ class SlavePhone(BaseMachine):
     # end Fill
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
+        super().DrawMachine()
 
         # Draw held objects
         if True == self.displayHeldToken:
@@ -911,11 +894,7 @@ class ExitDoor(BaseMachine):
     
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
+        super().DrawMachine()
     # end DrawMachine
 
 # end ExitDoor
@@ -1014,7 +993,8 @@ class JukeBox(BaseMachine):
         self.distractPort2.sourceMachine = self
         
         self.IsPlaying = False
-        self.playCountStart = 30*60
+        #self.playCountStart = 30*60
+        self.playCountStart = 30*45
         
         self.offTexture = arcade.load_texture('Resources/JuteBox.png')
         self.flashingTextureList = []
@@ -1066,11 +1046,7 @@ class JukeBox(BaseMachine):
     # end Fill
 
     def DrawMachine(self):
-        # Debug: Draw the ports
-        if None != self.givePort:
-            self.givePort.DrawPort()
-        if None != self.takePort:
-            self.takePort.DrawPort()
+        super().DrawMachine()
     # end DrawMachine
 
     def StartJukeBox(self):

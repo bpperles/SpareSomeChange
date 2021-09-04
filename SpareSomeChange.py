@@ -22,6 +22,7 @@ import ChangeHeld
 import ChangePlayer
 import ChangeZerk
 import ChangeUtils
+#import ChangePathFinding
 
 
 SCREEN_WIDTH = 800
@@ -37,7 +38,8 @@ PLAYER_GOAL_SIZE_Y = 64
 WALL_SPRITE_SIZE_X = 64
 WALL_GOAL_SIZE_X = 64
 
-PLAYER_MOVEMENT_SPEED = 5
+#PLAYER_MOVEMENT_SPEED = 5
+PLAYER_MOVEMENT_SPEED = 3
 GRAVITY = -.5
 
 # A view for displaying the playable game
@@ -50,6 +52,10 @@ class GameView(arcade.View):
         self.PlayerSprite = None
         self.JukeBoxSprite = None
         self.ZerkBankSprite = None
+        
+        #self.PathFindingZerk = None
+        #self.PathFindingPort = None
+        #self.PathFinder = None
         
         # Lists of sprites for update and draw
         self.PlayerSpriteList = None
@@ -95,13 +101,16 @@ class GameView(arcade.View):
         self.PlayerSpriteList.append(self.PlayerSprite)
         
         zerk = ChangeZerk.Zerk()
-        zerk.center_x = .6 * SCREEN_WIDTH
-        zerk.center_y = .6 * SCREEN_HEIGHT
+        zerk.center_x = .45 * SCREEN_WIDTH
+        zerk.center_y = .5 * SCREEN_HEIGHT
         self.ZerkSpriteList.append(zerk)
 
+        # Hack
+        #self.PathFindingZerk = zerk
+
         zerk2 = ChangeZerk.Zerk()
-        zerk2.center_x = .8 * SCREEN_WIDTH
-        zerk2.center_y = .6 * SCREEN_HEIGHT
+        zerk2.center_x = .65 * SCREEN_WIDTH
+        zerk2.center_y = .5 * SCREEN_HEIGHT
         self.ZerkSpriteList.append(zerk2)
 
         # Left token machine
@@ -111,6 +120,9 @@ class GameView(arcade.View):
         tokenMachine1.Fill()
         self.MachineSpriteList.append(tokenMachine1)
         self.AllWallsSpriteList.append(tokenMachine1)
+
+        # Hack
+        #self.PathFindingPort = tokenMachine1.GetTakePort()
 
         # Right top token machine
         x = .75 * SCREEN_WIDTH
@@ -184,7 +196,14 @@ class GameView(arcade.View):
 
         # Ask the physics engine to keep the player out of the walls
         self.PlayerPhysicsEngine = arcade.PhysicsEngineSimple(self.PlayerSprite, self.AllWallsSpriteList)
-        
+
+        zerk.InitPathfinder(self.AllWallsSpriteList, 0,SCREEN_WIDTH,0,SCREEN_HEIGHT)
+        zerk2.InitPathfinder(self.AllWallsSpriteList, 0,SCREEN_WIDTH,0,SCREEN_HEIGHT)
+
+        #gridSize = 8
+        #self.PathFinder = ChangePathFinding.ZerkPathFinder(self.PathFindingZerk, self.PathFindingPort, self.AllWallsSpriteList, 0,SCREEN_WIDTH,0,SCREEN_HEIGHT, gridSize)
+        #self.PathFinder.Compute()
+
     # end SetupLevel
     
     def on_show(self):
@@ -315,6 +334,8 @@ class GameView(arcade.View):
         for zerk in self.ZerkSpriteList:
             zerk.DrawHeldObject()
 
+        #self.PathFinder.DrawPath()
+
     # end on_draw
     
     # Over-ride base class, called when key is pressed
@@ -404,6 +425,8 @@ class GameView(arcade.View):
                                 
                                 zerk.isDistracted = True
                                 zerk.distractedBy = self.JukeBoxSprite
+                                
+                                # Todo: reset path from path finder!
     # end ZerkDistractions
 # end GameView
 
