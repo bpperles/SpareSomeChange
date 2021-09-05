@@ -16,7 +16,7 @@ How to launch:
 
 Required Libraries:
  - Python
- - Arcade
+ - Arcade  https://api.arcade.academy/en/latest/
 
 How to Play
 The game requires moving around resources to keep the tokens flowing while keeping the Zerks from getting their hands (?) on tokens.  Collect enough tokens to open the exit before the Zerks fill up their bin.
@@ -31,24 +31,36 @@ Them:
 The Zerks have esacped their video game machine and are running a-muck. A Zerk can carry a token.
 
 The game field:
+
 Each level has a variety of machines that make up your video arcade. Some have doors/drawers that need to be opened first. (Not yet implemented)
+
 Your Token Bin:
 This is the two stacked squares near the middle of the screen. To drop a token in the bin, stand on top and tap the down key.
+
 Token Machines:
 These machines start with two tokens, which can be accessed from the bottom. Token machines can be re-filled (up to a point) by putting bills in the notch on the side.
+
 Cash Register:
 By accessing the left side, you can get bills or refill it by putting in money bags.
+
 Safe:
 By accessing the right side, you can get money bags.
+
 Slot Machine: (Not yet implemented)
 By accessing the left side, you can put in bills to win (maybe) some tokens
+
 Zerk Bank:
 Zerk's put their tokens in their piggy bank. Too many and its game over.
+
 Exit: (Non-functional)
 Once you have 10 tokens in your bin, the exit will open. Access it from the bottom. Exiting is the only way to reset the Zerk bank.
+
 Distractions: These machines distract the Zerks, for a time...
+
 JuteBox: Put tokens in the right side.
+
 Pay Phone: If the left side is accessable, you can put in tokens.
+
 Popcorn Machine: (Not yet implemented) Tokens can be put in the right side.
 
 Level Rules (Not yet implemented)
