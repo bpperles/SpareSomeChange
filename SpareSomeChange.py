@@ -22,7 +22,7 @@ import ChangeHeld
 import ChangePlayer
 import ChangeZerk
 import ChangeUtils
-#import ChangePathFinding
+import ChangeScoringView
 
 
 SCREEN_WIDTH = 800
@@ -42,8 +42,15 @@ WALL_GOAL_SIZE_X = 64
 PLAYER_MOVEMENT_SPEED = 3
 GRAVITY = -.5
 
+
 # A view for displaying the playable game
 class GameView(arcade.View):
+    def __init__(self, gameParam):
+        super().__init__()
+        self.gameParam = gameParam
+    # end init
+
+    # Reset method for this class
     def setup(self):
         print('Setup GameView')
         
@@ -62,6 +69,7 @@ class GameView(arcade.View):
         self.ZerkSpriteList = None
         self.LoseTokenSpriteList = None
         self.MachineSpriteList = None
+        self.PointsSpriteList = None
         self.WallSpriteList = None
 
         # List of sprites for collision detection
@@ -90,6 +98,7 @@ class GameView(arcade.View):
         self.ZerkSpriteList = arcade.SpriteList()
         self.LoseTokenSpriteList = arcade.SpriteList()
         self.MachineSpriteList = arcade.SpriteList()
+        self.PointsSpriteList = arcade.SpriteList()
         self.WallSpriteList = arcade.SpriteList()
 
         self.AllWallsSpriteList = arcade.SpriteList()
@@ -105,9 +114,6 @@ class GameView(arcade.View):
         zerk.center_y = .5 * SCREEN_HEIGHT
         self.ZerkSpriteList.append(zerk)
 
-        # Hack
-        #self.PathFindingZerk = zerk
-
         zerk2 = ChangeZerk.Zerk()
         zerk2.center_x = .65 * SCREEN_WIDTH
         zerk2.center_y = .5 * SCREEN_HEIGHT
@@ -120,9 +126,6 @@ class GameView(arcade.View):
         tokenMachine1.Fill()
         self.MachineSpriteList.append(tokenMachine1)
         self.AllWallsSpriteList.append(tokenMachine1)
-
-        # Hack
-        #self.PathFindingPort = tokenMachine1.GetTakePort()
 
         # Right top token machine
         x = .75 * SCREEN_WIDTH
@@ -151,6 +154,9 @@ class GameView(arcade.View):
         x = .35 * SCREEN_WIDTH
         y = .5 * SCREEN_HEIGHT
         playerTokenBin = ChangeMachine.PlayerTokenBin(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
+        for ii in range(self.gameParam.tokensFromLastLevel):
+            token = ChangeHeld.Token()
+            playerTokenBin.AppendToken(token)
         self.MachineSpriteList.append(playerTokenBin)
         self.AllWallsSpriteList.append(playerTokenBin)
 
@@ -194,6 +200,26 @@ class GameView(arcade.View):
         self.MachineSpriteList.append(exitDoor)
         self.AllWallsSpriteList.append(exitDoor)
 
+        # Display the player's current points
+        # Put a list of point markers, dull or bright
+        x = 775
+        y = 400
+        dy = -50/4
+        for ii in range(9):
+            point = ChangeHeld.Point(.25)
+            point.center_x = x
+            point.center_y = y
+            
+            if ii <= (self.gameParam.points-1):
+                point.Bright()
+            else:
+                point.Dull()
+            
+            self.PointsSpriteList.append(point)
+            
+            y += dy
+        # end Loop
+
         # Ask the physics engine to keep the player out of the walls
         self.PlayerPhysicsEngine = arcade.PhysicsEngineSimple(self.PlayerSprite, self.AllWallsSpriteList)
 
@@ -219,98 +245,100 @@ class GameView(arcade.View):
     # end on_show
     
     def on_update(self, delta_time):
-        # Calculate speed based on the keys pressed
-        self.PlayerSprite.change_x = 0
-        self.PlayerSprite.change_y = 0
+        if "Playing" == self.gameParam.state:
+            # Calculate speed based on the keys pressed
+            self.PlayerSprite.change_x = 0
+            self.PlayerSprite.change_y = 0
 
-        # Update player speed based on keyboard input
-        if self.up_pressed and not self.down_pressed:
-            self.PlayerSprite.change_y = PLAYER_MOVEMENT_SPEED
-        elif self.down_pressed and not self.up_pressed:
-            self.PlayerSprite.change_y = -PLAYER_MOVEMENT_SPEED
-        if self.left_pressed and not self.right_pressed:
-            self.PlayerSprite.change_x = -PLAYER_MOVEMENT_SPEED
-        elif self.right_pressed and not self.left_pressed:
-            self.PlayerSprite.change_x = PLAYER_MOVEMENT_SPEED
+            # Update player speed based on keyboard input
+            if self.up_pressed and not self.down_pressed:
+                self.PlayerSprite.change_y = PLAYER_MOVEMENT_SPEED
+            elif self.down_pressed and not self.up_pressed:
+                self.PlayerSprite.change_y = -PLAYER_MOVEMENT_SPEED
+            if self.left_pressed and not self.right_pressed:
+                self.PlayerSprite.change_x = -PLAYER_MOVEMENT_SPEED
+            elif self.right_pressed and not self.left_pressed:
+                self.PlayerSprite.change_x = PLAYER_MOVEMENT_SPEED
 
-        # Player - Machine interaction
-        # Note: Do 'take' before 'give' so that if a machine has
-        # two ports on the same size, the player can't give and take
-        # in the same action
-        # (The real solution is open/close mode switches on the machine)
-        if True == self.up_pressed and False == self.up_last_pressed:
-            for mc in self.MachineSpriteList:
-                takePort = mc.GetTakePort()
-                if None != takePort:
-                    self.PlayerPortInteraction(takePort, "Up")
-                givePort = mc.GetGivePort()
-                if None != givePort:
-                    self.PlayerPortInteraction(givePort, "Up")
-                    
-        if True == self.down_pressed and False == self.down_last_pressed:
-            for mc in self.MachineSpriteList:
-                takePort = mc.GetTakePort()
-                if None != takePort:
-                    self.PlayerPortInteraction(takePort, "Down")
-                givePort = mc.GetGivePort()
-                if None != givePort:
-                    self.PlayerPortInteraction(givePort, "Down")
-                    
-        if True == self.right_pressed and False == self.right_last_pressed:
-            for mc in self.MachineSpriteList:
-                takePort = mc.GetTakePort()
-                if None != takePort:
-                    self.PlayerPortInteraction(takePort, "Right")
-                givePort = mc.GetGivePort()
-                if None != givePort:
-                    self.PlayerPortInteraction(givePort, "Right")
-                    
-        if True == self.left_pressed and False == self.left_last_pressed:
-            for mc in self.MachineSpriteList:
-                takePort = mc.GetTakePort()
-                if None != takePort:
-                    self.PlayerPortInteraction(takePort, "Left")
-                givePort = mc.GetGivePort()
-                if None != givePort:
-                    self.PlayerPortInteraction(givePort, "Left")
+            # Player - Machine interaction
+            # Note: Do 'take' before 'give' so that if a machine has
+            # two ports on the same size, the player can't give and take
+            # in the same action
+            # (The real solution is open/close mode switches on the machine)
+            if True == self.up_pressed and False == self.up_last_pressed:
+                for mc in self.MachineSpriteList:
+                    takePort = mc.GetTakePort()
+                    if None != takePort:
+                        self.PlayerPortInteraction(takePort, "Up")
+                    givePort = mc.GetGivePort()
+                    if None != givePort:
+                        self.PlayerPortInteraction(givePort, "Up")
+                        
+            if True == self.down_pressed and False == self.down_last_pressed:
+                for mc in self.MachineSpriteList:
+                    takePort = mc.GetTakePort()
+                    if None != takePort:
+                        self.PlayerPortInteraction(takePort, "Down")
+                    givePort = mc.GetGivePort()
+                    if None != givePort:
+                        self.PlayerPortInteraction(givePort, "Down")
+                        
+            if True == self.right_pressed and False == self.right_last_pressed:
+                for mc in self.MachineSpriteList:
+                    takePort = mc.GetTakePort()
+                    if None != takePort:
+                        self.PlayerPortInteraction(takePort, "Right")
+                    givePort = mc.GetGivePort()
+                    if None != givePort:
+                        self.PlayerPortInteraction(givePort, "Right")
+                        
+            if True == self.left_pressed and False == self.left_last_pressed:
+                for mc in self.MachineSpriteList:
+                    takePort = mc.GetTakePort()
+                    if None != takePort:
+                        self.PlayerPortInteraction(takePort, "Left")
+                    givePort = mc.GetGivePort()
+                    if None != givePort:
+                        self.PlayerPortInteraction(givePort, "Left")
 
-        # Update record
-        self.up_last_pressed = self.up_pressed
-        self.down_last_pressed = self.down_pressed
-        self.right_last_pressed = self.right_pressed
-        self.left_last_pressed = self.left_pressed
-        
-        # Update the player with the phyics engine
-        self.PlayerPhysicsEngine.update()
-        
-        # Players are updated by the physics engine 
-#        for player in self.PlayerSpriteList:
-#            player.UpdatePlayer()
-
-        # Have players and zerk interaction
-        self.PlayerZerkInteraction()
-
-        for zerk in self.ZerkSpriteList:
-            self.ZerkDistractions()
-            if None == zerk.targetMachine and False == zerk.isDistracted:
-                zerk.PickTarget(self.MachineSpriteList)
-            zerk.UpdateZerk()
+            # Update record
+            self.up_last_pressed = self.up_pressed
+            self.down_last_pressed = self.down_pressed
+            self.right_last_pressed = self.right_pressed
+            self.left_last_pressed = self.left_pressed
             
-        for token in self.LoseTokenSpriteList:
-            token.update()
+            # Update the player with the phyics engine
+            self.PlayerPhysicsEngine.update()
+            
+            # Players are updated by the physics engine 
+#            for player in self.PlayerSpriteList:
+#                player.UpdatePlayer()
 
-            # Check for an out of bounds token
-            if token.center_x < 0:
-                token.remove_from_sprite_lists()
-            elif token.center_x > SCREEN_WIDTH:
-                token.remove_from_sprite_lists()
-            if token.center_y < 0:
-                token.remove_from_sprite_lists()
-            elif token.center_y > SCREEN_HEIGHT:
-                token.remove_from_sprite_lists()
+            # Have players and zerk interaction
+            self.PlayerZerkInteraction()
 
-        for machine in self.MachineSpriteList:
-            machine.UpdateMachine()
+            for zerk in self.ZerkSpriteList:
+                self.ZerkDistractions()
+                if None == zerk.targetMachine and False == zerk.isDistracted:
+                    zerk.PickTarget(self.MachineSpriteList)
+                zerk.UpdateZerk()
+                
+            for token in self.LoseTokenSpriteList:
+                token.update()
+
+                # Check for an out of bounds token
+                if token.center_x < 0:
+                    token.remove_from_sprite_lists()
+                elif token.center_x > SCREEN_WIDTH:
+                    token.remove_from_sprite_lists()
+                if token.center_y < 0:
+                    token.remove_from_sprite_lists()
+                elif token.center_y > SCREEN_HEIGHT:
+                    token.remove_from_sprite_lists()
+
+            for machine in self.MachineSpriteList:
+                machine.UpdateMachine()
+        # end IsPlaying
     # end on_update
     
     def on_draw(self):
@@ -322,6 +350,7 @@ class GameView(arcade.View):
         self.ZerkSpriteList.draw()
         self.LoseTokenSpriteList.draw()
         self.MachineSpriteList.draw()
+        self.PointsSpriteList.draw()
         
         # Draw extra details on objects
         for machine in self.MachineSpriteList:
@@ -334,21 +363,38 @@ class GameView(arcade.View):
         for zerk in self.ZerkSpriteList:
             zerk.DrawHeldObject()
 
-        #self.PathFinder.DrawPath()
+        if "Paused" == self.gameParam.state:
+            x = 200
+            y = 300
+            fontSize = 100
+            text = "Paused"
+            arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+        elif "GameOver" == self.gameParam.state:
+            x = 200
+            y = 300
+            fontSize = 100
+            text = "Game Over"
+            arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
 
     # end on_draw
     
     # Over-ride base class, called when key is pressed
     def on_key_press(self, key, modifiers):
         # https://api.arcade.academy/en/latest/arcade.key.html
-        if key == arcade.key.UP:
-            self.up_pressed = True
-        elif key == arcade.key.DOWN:
-            self.down_pressed = True
-        elif key == arcade.key.LEFT:
-            self.left_pressed = True
-        elif key == arcade.key.RIGHT:
-            self.right_pressed = True
+        if "Paused" == self.gameParam.state:
+            self.gameParam.state = "Playing"
+        if "Playing" == self.gameParam.state:
+            if key == arcade.key.UP:
+                self.up_pressed = True
+            elif key == arcade.key.DOWN:
+                self.down_pressed = True
+            elif key == arcade.key.LEFT:
+                self.left_pressed = True
+            elif key == arcade.key.RIGHT:
+                self.right_pressed = True
+            elif key == arcade.key.ESCAPE:
+                if "Playing" == self.gameParam.state:
+                    self.gameParam.state = "Paused"
     # end on_key_press
 
     # Over-ride base class, called when key is released
@@ -414,21 +460,132 @@ class GameView(arcade.View):
                     if False == zerk.isDistracted:
                         port = self.JukeBoxSprite.FillEmptyDistractionPort(zerk)
                         if None != port:
-                            valList = port.GetEnemyDock()
-                            if 2 <= len(valList):
-                                zerk.targetX = valList[0]
-                                zerk.targetY = valList[1]
-                                zerk.targetMachine = self.JukeBoxSprite
-                                zerk.targetPort = port
-                                
-                                # Todo: Lose carried tokens
-                                
-                                zerk.isDistracted = True
-                                zerk.distractedBy = self.JukeBoxSprite
-                                
-                                # Todo: reset path from path finder!
+                            zerk.BecomeDistracted(self.JukeBoxSprite, port)
     # end ZerkDistractions
 # end GameView
+
+class WelcomeView(arcade.View):
+    def __init__(self, gameParam):
+        super().__init__()
+        self.gameParam = gameParam
+        
+        print(f'self.gameParam.tokensFromLastLevel = {self.gameParam.tokensFromLastLevel}')
+        
+    # end init
+    
+    # Reset method for this class
+    def setup(self):
+        print('setup WelcomeView')
+        # Also called when switching to this view (?)
+        self.AllSpriteList = arcade.SpriteList()
+    # end setup
+
+    def on_show(self):
+        print('on_show WelcomeView')
+        x = 100
+        y = 300
+        player = ChangePlayer.Player(x, y)
+        self.AllSpriteList.append(player)
+        
+        zerk = ChangeZerk.Zerk()
+        zerk.center_x = 200
+        zerk.center_y = 300
+        self.AllSpriteList.append(zerk)
+
+        zerk2 = ChangeZerk.Zerk()
+        zerk2.center_x = 300
+        zerk2.center_y = 300
+        self.AllSpriteList.append(zerk2)
+        
+        x = 400
+        y = 300
+        for ii in range(6):
+            token = ChangeHeld.Token()
+            token.center_x = x
+            token.center_y = y
+            self.AllSpriteList.append(token)
+            x += 50
+        
+        
+        # Called when switching to this view
+        arcade.set_background_color(arcade.color.BLACK)
+        
+        # Control mouse visibility
+        self.window.set_mouse_visible(True)
+    # den on_show
+    
+    def on_draw(self):
+        # Called each draw cycle
+        arcade.start_render()
+
+
+        x = 200
+        y = 500
+        fontSize = 50
+        text = "Spare Change"
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+
+        x = 200
+        y = 400
+        fontSize = 30
+        text = "Press any key to START"
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+
+        dy = -30
+
+        x = 50
+        y = 200
+        fontSize = 20
+        text = "Instructions:"
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+
+        y += dy
+        text = "Move using the arrow keys."
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+        
+        y += dy
+        text = "Interact with a machine by standing next to it and tapping toward it."
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+
+        y += dy
+        text = "(The side of the machine maters.)"
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+
+        y += dy
+        text = "To advance to the next level, accumulate 9 points (awarded on exiting)."
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+
+        y += dy
+        text = "Don't let the Zerks get all the tokens!"
+        arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+
+        '''
+        dy = -30
+        fontSize = 20
+        
+        y += dy
+        text = "Protect your garden from the rabbits using snowball throwing gnomes!"
+        arcade.draw_text(text, x, y, arcade.color.BLACK, fontSize)
+        y += dy
+        '''
+        
+        self.AllSpriteList.draw()
+
+    # end on_draw
+    
+    def on_key_press(self, symbol, modifiers):
+        # https://api.arcade.academy/en/latest/arcade.key.html
+        # Toggle views when any key is pressed
+        
+        self.gameParam.state = "Playing"
+        
+        nextView = GameView(self.gameParam)
+        nextView.setup()
+        # A view has a pointer to the window that it is displayed in
+        self.window.show_view(nextView)
+    # on_key_press
+# end WelcomeView
+
 
 # Window class (minimal because all the work is done in views)
 class MyGame(arcade.Window):
@@ -440,13 +597,28 @@ class MyGame(arcade.Window):
         
     # end __init__
 
+    # Manual reset method for this class
     def setup(self):
         print('setup MyGame')
-        nextView = GameView()
+        
+        gameParam = ChangeUtils.GameParameters()
+        gameParam.level = 1
+        gameParam.state = "Welcome"
+        
+        #nextView = GameView(gameParam)
+        
+        #gameParam.tokensFromLastLevel = 5
+        nextView = WelcomeView(gameParam)
+        
+        #gameParam.tokensInBin = 4
+        #gameParam.points = 3
+        #gameParam.points = 7
+        #nextView = ChangeScoringView.ScoringView(gameParam)
+        
         nextView.setup()
         
         self.show_view(nextView)
-    # end setup        
+    # end setup
 
 # end MyGame
 

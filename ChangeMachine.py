@@ -381,22 +381,7 @@ class PlayerTokenBin(BaseMachine):
         rc = False
         if "Token" == obj.GetType():
             if len(self.heldTokenSpriteList) < self.heldTokenMax:
-                # As tokens are given to the bin, place them in a grid
-                spacing = 15
-                # use zero index by getting the size before appending
-                size = len(self.heldTokenSpriteList)
-                gap = int(size/9)
-                row = int(size/3)
-                col = size % 3
-                #print(f'row = {row}')
-                #print(f'col = {col}')
-                oX = int(-spacing + col*spacing)
-                oY = int(row*spacing + (spacing + 1.4*gap*spacing)) # Center in each of the cubes
-                obj.center_x = self.center_x + oX
-                obj.center_y = self.bottom + oY
-
-
-                self.heldTokenSpriteList.append(obj)
+                self.AppendToken(obj)
                 rc = True
         return rc
     # end PlayerGive
@@ -419,6 +404,29 @@ class PlayerTokenBin(BaseMachine):
             obj = self.heldTokenSpriteList.pop()
         return obj
     # end PlayerTake
+
+    # Add a token to the bin and calculate its position to be displayed
+    def AppendToken(self, newToken):
+        # As tokens are given to the bin, place them in a grid
+        self.heldTokenSpriteList.append(newToken)
+        self.PositionToken(newToken, len(self.heldTokenSpriteList))
+    # end AddToken
+
+    # Calculate and set the position of a token for a given index
+    def PositionToken(self, token, index):
+        spacing = 15
+        # This just works
+        size = index-1
+        gap = int(size/9)
+        row = int(size/3)
+        col = size % 3
+        #print(f'row = {row}')
+        #print(f'col = {col}')
+        oX = int(-spacing + col*spacing)
+        oY = int(row*spacing + (spacing + 1.4*gap*spacing)) # Center in each of the cubes
+        token.center_x = self.center_x + oX
+        token.center_y = self.bottom + oY
+    # end PositionToken
 
     def DrawMachine(self):
         super().DrawMachine()

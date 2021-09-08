@@ -13,6 +13,19 @@ def myRandom2(min, max):
     return random.randrange(min, max)
 # myRandom2
 
+# Key values that are passed between views
+class GameParameters():
+    def __init__(self):
+        # Welcome, Playing, Paused, GameOver, Scoring
+        self.state = "Unknown"
+        self.level = 0
+        self.points = 0
+        self.tokensInBin = 0
+        self.tokensFromLastLevel = 0
+    # end init
+# end GameParam
+
+
 # A stand alone utility class that will cause a sprite to display an animation for a peroid of time
 # and then revert back when finished. Needs to have its Update() method manually called each cycle.
 # Does not trigger any drawing, just changes the sprite's texture.

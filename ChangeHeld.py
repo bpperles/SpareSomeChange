@@ -94,3 +94,24 @@ class Bag(Holdable):
     # end Fall
     
 # end Bag
+
+# Not a game object, but for the scoring screen
+class Point(Holdable):
+    def __init__(self, scale):
+        # Object variables
+        filename = "Resources/Point_Bright.png"
+        super().__init__(filename, scale)
+
+        self.brightTexture = arcade.load_texture('Resources/Point_Bright.png')
+        self.dullTexture = arcade.load_texture('Resources/Point_Dull.png')
+
+        self.type = "Point"
+    # end init
+   
+    def Bright(self):
+        self.texture = self.brightTexture
+
+    def Dull(self):
+        self.texture = self.dullTexture
+
+# end Point

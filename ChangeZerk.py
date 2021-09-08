@@ -209,6 +209,19 @@ class Zerk(arcade.Sprite):
         return "Empty"
     # end GetCarryingType
 
+    def BecomeDistracted(self, machine, port):
+        valList = port.GetEnemyDock()
+        if 2 <= len(valList):
+            self.targetX = valList[0]
+            self.targetY = valList[1]
+            self.targetMachine = machine
+            self.targetPort = port
+            self.pathFinder.ComputeForPort(self.targetPort)
+            
+            self.isDistracted = True
+            self.distractedBy = machine
+    # end BecomeDistracted
+
     def CheckDistraction(self):
         if self.isDistracted and None != self.distractedBy:
             if False == self.distractedBy.IsDistracting():
