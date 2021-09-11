@@ -27,6 +27,8 @@ class ScoringView(arcade.View):
         self.pointsSpriteList = None
         self.playerTokenBin = None
         
+        self.levelAdvanced = False
+        
         self.scoringAnimator = None
         self.displayingScoringAnimation = False
     # end init
@@ -100,9 +102,11 @@ class ScoringView(arcade.View):
                 pointLimit = 9
                 
                 gainedPoints = self.gameParam.tokensInBin - lowerLimit
-                self.gameParam.points += gainedPoints
+                if 0 < gainedPoints:
+                    self.gameParam.points += gainedPoints
                 if pointLimit <= self.gameParam.points:
                     print('Advance Level!')
+                    self.levelAdvanced = True
                     self.gameParam.level += 1
                     self.gameParam.points = 0
                     self.gameParam.tokensInBin = 0
@@ -135,6 +139,13 @@ class ScoringView(arcade.View):
             fontSize = 30
             text = "Press any key to START"
             arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+            
+        if True == self.levelAdvanced:
+            x = 400
+            y = 300
+            fontSize = 30
+            text = f"Advance to Level {self.gameParam.level}"
+            arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
 
 
     # end on_draw
@@ -164,6 +175,9 @@ class ScoringView(arcade.View):
         pointLimit = 9
         timeStep = 0
         deltaT = 20
+
+        # Give it a second before it starts
+        timeStep = 40
 
         # If the token is in the lower bin, deleted them bottom up
         # if the token is in the upper bin, move then to the lower bin(bottom up) and activate a point for each.
@@ -249,7 +263,7 @@ class ScoringAnimator():
                 step.object.remove_from_sprite_lists()
             elif "MoveToIndex" == step.action:
                 if step.playerTokenBin:
-                    print(f'step.newIndex = {step.newIndex}')
+                    #print(f'step.newIndex = {step.newIndex}')
                     step.playerTokenBin.PositionToken(step.object, step.newIndex) 
             elif "ChangeTexture" == step.action:
                 step.object.texture = step.newTexture

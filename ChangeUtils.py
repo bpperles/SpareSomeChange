@@ -16,7 +16,7 @@ def myRandom2(min, max):
 # Key values that are passed between views
 class GameParameters():
     def __init__(self):
-        # Welcome, Playing, Paused, GameOver, Scoring
+        # Welcome, Playing, Paused, GameOver, ExitLevel, Scoring
         self.state = "Unknown"
         self.level = 0
         self.points = 0

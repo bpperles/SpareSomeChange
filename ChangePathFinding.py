@@ -39,7 +39,8 @@ class ZerkPathFinder():
                                                 self.barrier_list,
                                                 diagonal_movement=True)
         if self.path:
-            print(f'len = {len(self.path)}')
+            x = 1
+            #print(f'len = {len(self.path)}')
         else:
             print('Failed to get path')
          

@@ -86,6 +86,12 @@ class Port():
         return obj
     # end PlayerTake
 
+    def DoSpecial(self):
+        msg = ""
+        if None != self.sourceMachine:
+            msg = self.sourceMachine.DoSpecial()
+        return msg
+
     # Debug: Draw the player area and zerk point
     def DrawPort(self):
         if self.player:
@@ -96,6 +102,29 @@ class Port():
             # print(f'{self.enemyDockX}, {self.enemyDockY}, {self.enemyDockSlop}')
     # end DrawPort
 
+    # Draw an arrow that points to the active side of the machine
+    def DrawHelper(self):
+        strip = []
+        if "Up" == self.direction:
+            strip.append((self.playerDockMinX, self.playerDockMinY))
+            strip.append(((self.playerDockMinX+self.playerDockMaxX)/2, self.playerDockMaxY))
+            strip.append((self.playerDockMaxX, self.playerDockMinY))
+        if "Down" == self.direction:
+            strip.append((self.playerDockMinX, self.playerDockMaxY))
+            strip.append(((self.playerDockMinX+self.playerDockMaxX)/2, self.playerDockMinY))
+            strip.append((self.playerDockMaxX, self.playerDockMaxY))
+        if "Left" == self.direction:
+            strip.append((self.playerDockMaxX, self.playerDockMinY))
+            strip.append((self.playerDockMinX,(self.playerDockMinY+self.playerDockMaxY)/2))
+            strip.append((self.playerDockMaxX, self.playerDockMaxY))
+        if "Right" == self.direction:
+            strip.append((self.playerDockMinX, self.playerDockMinY))
+            strip.append((self.playerDockMaxX,(self.playerDockMinY+self.playerDockMaxY)/2))
+            strip.append((self.playerDockMinX, self.playerDockMaxY))
+
+        arcade.draw_line_strip(strip, arcade.color.GRAY, 2)
+    # end DrawHelper
+
 # end Port
 
 # An static object that has ports that agents interact with
@@ -104,6 +133,8 @@ class BaseMachine(arcade.Sprite):
         super().__init__(filename, scale)
         self.givePort = None
         self.takePort = None
+        self.specialPort = None
+        self.displayPortHelper = False
     # end init
     
     def GetGivePort(self):
@@ -113,6 +144,10 @@ class BaseMachine(arcade.Sprite):
     def GetTakePort(self):
         return self.takePort
     # end GetGivePort
+
+    def GetSpecialPort(self):
+        return self.specialPort
+    # end GetSpecialPort
 
     def PlayerGive(self, obj):
         rc = False
@@ -134,11 +169,26 @@ class BaseMachine(arcade.Sprite):
         return obj
     # end PlayerTake
 
+    def DoSpecial(self):
+        msg = ""
+        return msg
+    # end DoSpecial
+
     def Fill(self):
         x = 1
     # end Fill
 
     def DrawMachine(self):
+        
+        if True == self.displayPortHelper:
+            if None != self.givePort:
+                self.givePort.DrawHelper()
+            if None != self.takePort:
+                self.takePort.DrawHelper()
+            if None != self.specialPort:
+                self.specialPort.DrawHelper()
+            
+        
         # Debug
         drawPorts = False
         if drawPorts:
@@ -147,6 +197,8 @@ class BaseMachine(arcade.Sprite):
                 self.givePort.DrawPort()
             if None != self.takePort:
                 self.takePort.DrawPort()
+            if None != self.specialPort:
+                self.specialPort.DrawPort()
     # end DrawMachine
     
     def UpdateMachine(self):
@@ -314,6 +366,8 @@ class PlayerTokenBin(BaseMachine):
         self.heldTokenMax = 18
         self.displayHeldToken = True
         
+        self.allowZerkToSteal = True
+        
         self.givePort = Port()
         self.takePort = Port()
         
@@ -367,6 +421,7 @@ class PlayerTokenBin(BaseMachine):
         self.takePort.enemyDockSlop = 2
         
         self.takePort.sourceMachine = self
+        
     # end init
     
     def GetGivePort(self):
@@ -400,7 +455,7 @@ class PlayerTokenBin(BaseMachine):
 
     def EnemyTake(self):
         obj = None
-        if 0 < len(self.heldTokenSpriteList):
+        if 0 < len(self.heldTokenSpriteList) and self.allowZerkToSteal:
             obj = self.heldTokenSpriteList.pop()
         return obj
     # end PlayerTake
@@ -894,12 +949,53 @@ class ExitDoor(BaseMachine):
         self.center_x = x
         self.center_y = y
         
-        # Todo: Allow activation of exit port
         self.givePort = None
         self.takePort = None
+        self.specialPort = None
+        self.inactiveSpecialPort = Port()
+        
+        self.isOpen = False
+        self.openTexture = arcade.load_texture('Resources/Exit_Open.png')
+        
+        # ------ Special Port (created inactive) -----------
+        self.inactiveSpecialPort.type = "Special"
+        self.inactiveSpecialPort.player = True
+        self.inactiveSpecialPort.enemy = False
+        self.inactiveSpecialPort.direction = "Up"
+        self.inactiveSpecialPort.objectType = "ExitLevel"
+        
+        # Reach up
+        width = self.right - self.left
+        subWidth = width * AVAILABLE_PERCENT
+        myCenterX = self.center_x
+        myBottomY = self.bottom
+
+        self.inactiveSpecialPort.playerDockMinX = myCenterX - (subWidth / 2)
+        self.inactiveSpecialPort.playerDockMaxX = myCenterX + (subWidth / 2)
+        self.inactiveSpecialPort.playerDockMinY = myBottomY - (playerHeight / 2) - PLAYER_SLOP
+        self.inactiveSpecialPort.playerDockMaxY = myBottomY - (playerHeight / 2) + PLAYER_SLOP
+
+        # N/A
+        self.inactiveSpecialPort.enemyDockX = 0
+        self.inactiveSpecialPort.enemyDockY = 0
+        self.inactiveSpecialPort.enemyDockSlop = 0
+        
+        self.inactiveSpecialPort.sourceMachine = self
         
     # end init
+
+    def DoSpecial(self):
+        msg = "ExitLevel"
+        return msg
+    # end DoSpecial
     
+    def OpenDoor(self):
+        if False == self.isOpen:
+            print('Changing door texture')
+            self.specialPort = self.inactiveSpecialPort
+            self.texture = self.openTexture
+            self.isOpen = True
+    # end OpenDoor
 
     def DrawMachine(self):
         super().DrawMachine()
@@ -909,7 +1005,7 @@ class ExitDoor(BaseMachine):
 
 class JukeBox(BaseMachine):
     def __init__(self, x, y, playerWidth, playerHeight):
-        filename = "Resources/JuteBox.png"
+        filename = "Resources/JukeBox.png"
         scale = 1
         super().__init__(filename, scale)
 
@@ -1004,10 +1100,10 @@ class JukeBox(BaseMachine):
         #self.playCountStart = 30*60
         self.playCountStart = 30*45
         
-        self.offTexture = arcade.load_texture('Resources/JuteBox.png')
+        self.offTexture = arcade.load_texture('Resources/JukeBox.png')
         self.flashingTextureList = []
-        self.flashingTextureList.append(arcade.load_texture('Resources/JuteBoxA.png'))
-        self.flashingTextureList.append(arcade.load_texture('Resources/JuteBoxB.png'))
+        self.flashingTextureList.append(arcade.load_texture('Resources/JukeBoxA.png'))
+        self.flashingTextureList.append(arcade.load_texture('Resources/JukeBoxB.png'))
         self.flashCountStart = 10
         self.animator = None
 
@@ -1080,6 +1176,10 @@ class JukeBox(BaseMachine):
             self.dockedZerk2 = zerk
         return rp
     # end FillEmptyDistractionPort
+
+    def GetTimeReminain(self):
+        return self.playCountDown
+    # end GetTimeReminain
 
     def UpdateMachine(self):
         if self.IsPlaying:

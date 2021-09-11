@@ -27,6 +27,10 @@ class Zerk(arcade.Sprite):
         scale = ZERK_GOAL_SIZE_X / ZERK_SPRITE_SIZE_X
         super().__init__(filename, scale)
 
+        # "Gathering", "Distracted", "Tanturm"
+        self.state = "Gathering"
+        self.coolDown = 0
+
         # limited to one object
         self.HeldObjectSpriteList = arcade.SpriteList()
     
@@ -37,16 +41,67 @@ class Zerk(arcade.Sprite):
         self.targetY = 0
 
         # If something grabs the zerks attension
-        self.isDistracted = False
         self.distractedBy = None
         
         self.pathFinder = None
         self.animator = None
         
         self.defaultTexture = arcade.load_texture('Resources/zombie_idle.png')
+        self.reachTexture = arcade.load_texture('Resources/zombie_jump.png')
         self.reachTextureList = []
-        self.reachTextureList.append(arcade.load_texture('Resources/zombie_jump.png'))
+        self.reachTextureList.append(self.reachTexture)
+
+        self.angryTexture = arcade.load_texture('Resources/zombie_fall.png')
         
+        self.stolenTextureList = []
+        self.stolenTextureList.append(self.angryTexture)
+        self.stolenTextureList.append(self.defaultTexture)
+        
+        self.walk0Texture = arcade.load_texture('Resources/zombie_walk0.png')
+        self.walk1Texture = arcade.load_texture('Resources/zombie_walk1.png')
+        self.walk2Texture = arcade.load_texture('Resources/zombie_walk2.png')
+        self.walk3Texture = arcade.load_texture('Resources/zombie_walk3.png')
+        self.walk4Texture = arcade.load_texture('Resources/zombie_walk4.png')
+        self.walk5Texture = arcade.load_texture('Resources/zombie_walk5.png')
+        self.walk6Texture = arcade.load_texture('Resources/zombie_walk6.png')
+        self.walk7Texture = arcade.load_texture('Resources/zombie_walk7.png')
+
+        self.danceTextureList = []
+        '''
+        self.danceTextureList.append(self.walk3Texture)
+        self.danceTextureList.append(self.walk4Texture)
+        self.danceTextureList.append(self.walk3Texture)
+        self.danceTextureList.append(self.walk4Texture)
+        self.danceTextureList.append(self.walk2Texture)
+        self.danceTextureList.append(self.walk1Texture)
+        self.danceTextureList.append(self.walk2Texture)
+        self.danceTextureList.append(self.walk1Texture)
+        self.danceTextureList.append(self.walk0Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk0Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        '''
+        self.danceTextureList.append(self.walk3Texture)
+        self.danceTextureList.append(self.walk3Texture)
+        self.danceTextureList.append(self.walk4Texture)
+        self.danceTextureList.append(self.walk3Texture)
+        self.danceTextureList.append(self.walk3Texture)
+        self.danceTextureList.append(self.walk4Texture)
+        self.danceTextureList.append(self.walk2Texture)
+        self.danceTextureList.append(self.walk1Texture)
+        self.danceTextureList.append(self.walk2Texture)
+        self.danceTextureList.append(self.walk1Texture)
+        self.danceTextureList.append(self.walk0Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk0Texture)
+        self.danceTextureList.append(self.walk6Texture)
+        self.danceTextureList.append(self.walk6Texture)
+
     # end init
     
     def InitPathfinder(self, wallList, minX, maxX, minY, maxY):
@@ -139,44 +194,61 @@ class Zerk(arcade.Sprite):
         # For now, just make the zerk move towards its target point
         speed = ZERK_SPEED
         self.CheckDistraction()
-        if None != self.targetMachine:
-            # Move by pathfinder
-            pathTarget = self.pathFinder.GetNextTarget(self.center_x, self.center_y)
-            if pathTarget:
-                #print('moving towards path target')
-                # Move towards path target
-                if speed >= abs(self.center_x - pathTarget[0]):
-                    self.center_x = pathTarget[0]
-                elif self.center_x < pathTarget[0]:
-                    self.center_x += speed
-                else:
-                    self.center_x -= speed
-                if speed >= abs(self.center_y - pathTarget[1]):
-                    self.center_y = pathTarget[1]
-                elif self.center_y < pathTarget[1]:
-                    self.center_y += speed
-                else:
-                    self.center_y -= speed
-            else:
-                sqrDist = pow(self.center_x - self.targetX, 2) + pow(self.center_y - self.targetY, 2)
-                if (2*2) > sqrDist:
-                    # Reached target, clear target (seperate call will choose new target
-                    self.InteractWithMachine(self.targetPort)
-                    self.targetMachine = None
-                else:
-                    # Move towards target
-                    if speed >= abs(self.center_x - self.targetX):
-                        self.center_x = self.targetX
-                    elif self.center_x < self.targetX:
+        
+        if "Tantrum" == self.state:
+            self.coolDown -= 1
+            if 0 >= self.coolDown:
+                self.state = "Gathering"
+                print('Tanturm ended')
+        else:
+            if None != self.targetMachine:
+                # Move by pathfinder
+                pathTarget = self.pathFinder.GetNextTarget(self.center_x, self.center_y)
+                if pathTarget:
+                    #print('moving towards path target')
+                    # Move towards path target
+                    if speed >= abs(self.center_x - pathTarget[0]):
+                        self.center_x = pathTarget[0]
+                    elif self.center_x < pathTarget[0]:
                         self.center_x += speed
                     else:
                         self.center_x -= speed
-                    if speed >= abs(self.center_y - self.targetY):
-                        self.center_y = self.targetY
-                    elif self.center_y < self.targetY:
+                    if speed >= abs(self.center_y - pathTarget[1]):
+                        self.center_y = pathTarget[1]
+                    elif self.center_y < pathTarget[1]:
                         self.center_y += speed
                     else:
                         self.center_y -= speed
+                else:
+                    sqrDist = pow(self.center_x - self.targetX, 2) + pow(self.center_y - self.targetY, 2)
+                    if (2*2) > sqrDist:
+                        # Reached target, clear target (seperate call will choose new target
+                        
+                        if type(self.targetMachine) is ChangeMachine.JukeBox:
+                            # Dance!
+                            duration = self.targetMachine.GetTimeReminain()
+                            self.Dance(duration)
+                        
+                        self.InteractWithMachine(self.targetPort)
+                        self.targetMachine = None
+                        
+                        
+                    else:
+                        # Move towards target
+                        if speed >= abs(self.center_x - self.targetX):
+                            self.center_x = self.targetX
+                        elif self.center_x < self.targetX:
+                            self.center_x += speed
+                        else:
+                            self.center_x -= speed
+                        if speed >= abs(self.center_y - self.targetY):
+                            self.center_y = self.targetY
+                        elif self.center_y < self.targetY:
+                            self.center_y += speed
+                        else:
+                            self.center_y -= speed
+                        
+                        
         if self.animator:
             self.animator.update()
     # end update
@@ -218,20 +290,54 @@ class Zerk(arcade.Sprite):
             self.targetPort = port
             self.pathFinder.ComputeForPort(self.targetPort)
             
-            self.isDistracted = True
+            self.state = "Distracted"
             self.distractedBy = machine
     # end BecomeDistracted
+    
+    def IsDistracted(self):
+        rb = False
+        if "Distracted" == self.state:
+            rb = True
+        return rb
+    # end IsDistracted
 
     def CheckDistraction(self):
-        if self.isDistracted and None != self.distractedBy:
+        if self.IsDistracted() and None != self.distractedBy:
             if False == self.distractedBy.IsDistracting():
-                self.isDistracted = False
+                self.state = "Gathering"
                 self.distractedBy = None
     # end CheckDistraction
+
+    def ThrowTantrum(self):
+        duration = 90
+        self.state = "Tantrum"
+        self.coolDown = duration
+
+        self.targetMachine = None
+        self.targetPort = None
+        self.targetX = 0
+        self.targetY = 0
+
+        # Starts automatically
+        self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.stolenTextureList, duration, 10)
+    # end ThrowTantrum
 
     def ReachAnimation(self):
         # Starts automatically
         self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.reachTextureList, 10, 10)
     # end ReachAnimation
+
+    def Dance(self, duration):
+        self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.danceTextureList, duration, 10)
+    # end Dance    
+
+    def IsPickingNewTargets(self):
+        rb = False
+        if None == self.targetMachine:
+            if "Gathering" == self.state:
+                rb = True
+        return rb
+    # IsPickingNewTargets
+
 
 # end Zerk
