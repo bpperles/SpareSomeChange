@@ -1,5 +1,5 @@
-# ChangeLevel0.py
-# Define function for creating objects for level 0
+# ChangeLevel2.py
+# Define function for creating objects for level 2
 # This is an easy level to introduce the game to new players
 
 # Imported libraries
@@ -20,7 +20,7 @@ PLAYER_GOAL_SIZE_X = 48
 PLAYER_GOAL_SIZE_Y = 64
 
 
-def BuildLevel0(gameParam,
+def BuildLevel2(gameParam,
                 PlayerSpriteList,
                 ZerkSpriteList,
                 MachineSpriteList,
@@ -76,13 +76,20 @@ def BuildLevel0(gameParam,
     MachineSpriteList.append(tokenMachine4)
     AllWallsSpriteList.append(tokenMachine4)
 
+    # Top left token machine
+    x = .1 * SCREEN_WIDTH
+    y = .9 * SCREEN_HEIGHT
+    tokenMachine4 = ChangeMachine.TokenMachine(x, y, "Left", PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
+    tokenMachine4.Fill()
+    MachineSpriteList.append(tokenMachine4)
+    AllWallsSpriteList.append(tokenMachine4)
+
     x = .35 * SCREEN_WIDTH
     y = .5 * SCREEN_HEIGHT
     PlayerTokenBin = ChangeMachine.PlayerTokenBin(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
     for ii in range(gameParam.tokensFromLastLevel):
         token = ChangeHeld.Token()
         PlayerTokenBin.AppendToken(token)
-    PlayerTokenBin.allowZerkToSteal = False  # Be nice to the new player
     MachineSpriteList.append(PlayerTokenBin)
     AllWallsSpriteList.append(PlayerTokenBin)
 
@@ -98,26 +105,32 @@ def BuildLevel0(gameParam,
     cashRegister.Fill()
     MachineSpriteList.append(cashRegister)
     AllWallsSpriteList.append(cashRegister)
-    
-    x = .1 * SCREEN_WIDTH
-    y = .9 * SCREEN_HEIGHT
+
+    x = .4 * SCREEN_WIDTH
+    y = .1 * SCREEN_HEIGHT
     safe = ChangeMachine.Safe(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
     MachineSpriteList.append(safe)
     AllWallsSpriteList.append(safe)
 
-    x = .4 * SCREEN_WIDTH
-    y = .1 * SCREEN_HEIGHT
-    jukeBox = ChangeMachine.JukeBox(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
-    MachineSpriteList.append(jukeBox)
-    DistractionSpriteSubList.append(jukeBox)
-    AllWallsSpriteList.append(jukeBox)
-
-    x = .1 * SCREEN_WIDTH
+    x = .18 * SCREEN_WIDTH
     y = .3 * SCREEN_HEIGHT
-    leftPhone = ChangeMachine.DummyPhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
+    leftPhone = ChangeMachine.DriverPhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
     leftPhone.Fill()
     MachineSpriteList.append(leftPhone)
+    DistractionSpriteSubList.append(leftPhone)
     AllWallsSpriteList.append(leftPhone)
+
+    x = .675 * SCREEN_WIDTH
+    y = .9 * SCREEN_HEIGHT
+    rightPhone = ChangeMachine.DriverPhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
+    rightPhone.Fill()
+    MachineSpriteList.append(rightPhone)
+    DistractionSpriteSubList.append(rightPhone)
+    AllWallsSpriteList.append(rightPhone)
+
+    # Pair the phones
+    rightPhone.pairedPhone = leftPhone
+    leftPhone.pairedPhone = rightPhone
 
     x = .55 * SCREEN_WIDTH
     y = .5 * SCREEN_HEIGHT

@@ -24,6 +24,7 @@ import ChangeZerk
 import ChangeUtils
 import ChangeScoringView
 import ChangeLevel0
+import ChangeLevel2
 
 
 SCREEN_WIDTH = 800
@@ -106,15 +107,27 @@ class GameView(arcade.View):
 
         self.AllWallsSpriteList = arcade.SpriteList()
 
-        if 0 == self.gameParam.level:
-            print("a")
-            ChangeLevel0.BuildLevel0(
-                self.gameParam,
-                self.PlayerSpriteList,
-                self.ZerkSpriteList,
-                self.MachineSpriteList,
-                self.DistractionSpriteSubList,
-                self.AllWallsSpriteList)
+        if 1 == self.gameParam.level:
+            self.BuildLevel1()
+        elif 3 <= self.gameParam.level:
+            self.BuildLevel1()
+        else:
+            if 0 == self.gameParam.level:
+                ChangeLevel0.BuildLevel0(
+                    self.gameParam,
+                    self.PlayerSpriteList,
+                    self.ZerkSpriteList,
+                    self.MachineSpriteList,
+                    self.DistractionSpriteSubList,
+                    self.AllWallsSpriteList)
+            elif 2 == self.gameParam.level:
+                ChangeLevel2.BuildLevel2(
+                    self.gameParam,
+                    self.PlayerSpriteList,
+                    self.ZerkSpriteList,
+                    self.MachineSpriteList,
+                    self.DistractionSpriteSubList,
+                    self.AllWallsSpriteList)
 
             # Find Unique Objects
             if 0 < len(self.PlayerSpriteList):
@@ -127,11 +140,7 @@ class GameView(arcade.View):
                     self.ExitDoorSprite = machine
                 elif type(machine) is ChangeMachine.EnemyTokenBin:
                     self.ZerkBankSprite = machine
-            
-        elif 1 == self.gameParam.level:
-            self.BuildLevel1()
-        else:            
-            self.BuildLevel1()
+        # End else
         
         # Display the player's current points
         # Put a list of point markers, dull or bright
@@ -249,7 +258,7 @@ class GameView(arcade.View):
 
         x = .1 * SCREEN_WIDTH
         y = .3 * SCREEN_HEIGHT
-        leftPhone = ChangeMachine.SlavePhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
+        leftPhone = ChangeMachine.DummyPhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
         leftPhone.Fill()
         self.MachineSpriteList.append(leftPhone)
         self.AllWallsSpriteList.append(leftPhone)
@@ -499,7 +508,6 @@ class GameView(arcade.View):
                         if None != obj:
                             self.PlayerSprite.RecieveObject(obj)
                 elif "Special" == port.type:
-                    print('docked at special port')
                     msg = port.DoSpecial()
                     if "ExitLevel" == msg:
                         self.gameParam.state = "ExitLevel"
@@ -535,11 +543,17 @@ class GameView(arcade.View):
                             port = distraction.FillEmptyDistractionPort(zerk)
                             if None != port:
                                 zerk.BecomeDistracted(distraction, port)
+            elif type(distraction) is ChangeMachine.DriverPhone:
+                if True == distraction.IsDistracting():
+                    for zerk in self.ZerkSpriteList:
+                        if False == zerk.IsDistracted():
+                            port = distraction.FillEmptyDistractionPort(zerk)
+                            if None != port:
+                                zerk.BecomeDistracted(distraction, port)
     # end ZerkDistractions
     
     def CheckGameState(self):
         if "ExitLevel" == self.gameParam.state:
-            print('Found Exit Level')
             if self.PlayerTokenBinSprite:
                 self.gameParam.tokensInBin = len(self.PlayerTokenBinSprite.heldTokenSpriteList)
             nextView = ChangeScoringView.ScoringView(self.gameParam)
@@ -698,8 +712,9 @@ class MyGame(arcade.Window):
         print('setup MyGame')
         
         gameParam = ChangeUtils.GameParameters()
-        gameParam.level = 0
+        #gameParam.level = 0
         #gameParam.level = 1
+        gameParam.level = 2
         gameParam.state = "Welcome"
         
         #nextView = GameView(gameParam)

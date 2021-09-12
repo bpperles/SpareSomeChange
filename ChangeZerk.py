@@ -56,7 +56,7 @@ class Zerk(arcade.Sprite):
         self.stolenTextureList = []
         self.stolenTextureList.append(self.angryTexture)
         self.stolenTextureList.append(self.defaultTexture)
-        
+
         self.walk0Texture = arcade.load_texture('Resources/zombie_walk0.png')
         self.walk1Texture = arcade.load_texture('Resources/zombie_walk1.png')
         self.walk2Texture = arcade.load_texture('Resources/zombie_walk2.png')
@@ -67,24 +67,6 @@ class Zerk(arcade.Sprite):
         self.walk7Texture = arcade.load_texture('Resources/zombie_walk7.png')
 
         self.danceTextureList = []
-        '''
-        self.danceTextureList.append(self.walk3Texture)
-        self.danceTextureList.append(self.walk4Texture)
-        self.danceTextureList.append(self.walk3Texture)
-        self.danceTextureList.append(self.walk4Texture)
-        self.danceTextureList.append(self.walk2Texture)
-        self.danceTextureList.append(self.walk1Texture)
-        self.danceTextureList.append(self.walk2Texture)
-        self.danceTextureList.append(self.walk1Texture)
-        self.danceTextureList.append(self.walk0Texture)
-        self.danceTextureList.append(self.walk6Texture)
-        self.danceTextureList.append(self.walk6Texture)
-        self.danceTextureList.append(self.walk6Texture)
-        self.danceTextureList.append(self.walk0Texture)
-        self.danceTextureList.append(self.walk6Texture)
-        self.danceTextureList.append(self.walk6Texture)
-        self.danceTextureList.append(self.walk6Texture)
-        '''
         self.danceTextureList.append(self.walk3Texture)
         self.danceTextureList.append(self.walk3Texture)
         self.danceTextureList.append(self.walk4Texture)
@@ -101,6 +83,15 @@ class Zerk(arcade.Sprite):
         self.danceTextureList.append(self.walk0Texture)
         self.danceTextureList.append(self.walk6Texture)
         self.danceTextureList.append(self.walk6Texture)
+
+        self.talkTexture = arcade.load_texture('Resources/zombie_talk.png')
+
+        self.talkTextureList = []
+        self.talkTextureList.append(self.talkTexture)
+        self.talkTextureList.append(self.talkTexture)
+        self.talkTextureList.append(self.defaultTexture)
+        self.talkTextureList.append(self.talkTexture)
+        self.talkTextureList.append(self.defaultTexture)
 
     # end init
     
@@ -224,15 +215,25 @@ class Zerk(arcade.Sprite):
                     if (2*2) > sqrDist:
                         # Reached target, clear target (seperate call will choose new target
                         
-                        if type(self.targetMachine) is ChangeMachine.JukeBox:
-                            # Dance!
-                            duration = self.targetMachine.GetTimeReminain()
-                            self.Dance(duration)
-                        
-                        self.InteractWithMachine(self.targetPort)
+                        if "Distract" == self.targetPort.type:
+                            if type(self.targetMachine) is ChangeMachine.JukeBox:
+                                # Dance!
+                                duration = self.targetMachine.GetTimeReminain()
+                                self.Dance(duration)
+                            elif type(self.targetMachine) is ChangeMachine.DriverPhone:
+                                # Talk!
+                                duration = self.targetMachine.GetTimeReminain()
+                                self.Talk(duration)
+                                # The machine is the phone that the player put the token into
+                                # We need to pick up on the phone we walked to
+                                if self.targetPort and self.targetPort.sourceMachine:
+                                    self.targetPort.sourceMachine.PickUp()
+                            # end elif
+                        else:
+                            self.InteractWithMachine(self.targetPort)
+                            
                         self.targetMachine = None
-                        
-                        
+                        self.targetPort = None
                     else:
                         # Move towards target
                         if speed >= abs(self.center_x - self.targetX):
@@ -330,6 +331,10 @@ class Zerk(arcade.Sprite):
     def Dance(self, duration):
         self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.danceTextureList, duration, 10)
     # end Dance    
+
+    def Talk(self, duration):
+        self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.talkTextureList, duration, 10)
+    # end Talk    
 
     def IsPickingNewTargets(self):
         rb = False

@@ -843,7 +843,7 @@ class Safe(BaseMachine):
 
 # A pay phone that sometimes has a token in the change slot.
 # Can be linked to a master phone to from a zerk distraction.
-class SlavePhone(BaseMachine):
+class DummyPhone(BaseMachine):
     def __init__(self, x, y, playerWidth, playerHeight):
         filename = "Resources/Phone.png"
         scale = 1
@@ -938,7 +938,259 @@ class SlavePhone(BaseMachine):
             self.heldTokenSpriteList.draw()
     # end DrawMachine
 
-# end SlavePhone
+# end DummyPhone
+
+# A pay phone that sometimes has a token in the change slot.
+# Can be linked to a master phone to from a zerk distraction.
+class DriverPhone(BaseMachine):
+    def __init__(self, x, y, playerWidth, playerHeight):
+        filename = "Resources/Phone.png"
+        scale = 1
+        super().__init__(filename, scale)
+        
+        self.center_x = x
+        self.center_y = y
+        
+        self.heldTokenSpriteList = arcade.SpriteList()
+        self.heldTokenMax = 1
+        self.displayHeldToken = False
+        
+        self.pairedPhone = None
+        self.isActive = False
+        self.isRinging = False
+        self.isOffHook = False
+        self.isTalking = False
+        self.talkCountStart = 30*25
+        self.talkCountDown = 0
+
+        self.hungUpTexture = arcade.load_texture('Resources/Phone.png')
+        self.ringingTexture = arcade.load_texture('Resources/PhoneC.png')
+        self.offHookTexture = arcade.load_texture('Resources/PhoneD.png')
+        self.ringingTextureList = []
+        self.ringingTextureList.append(self.ringingTexture)
+        self.ringingTextureList.append(self.hungUpTexture)
+        self.ringCountStart = 5
+        self.animator = None
+
+        self.givePort = Port()
+        self.takePort = Port()
+        self.distractPort1 = Port()
+        
+        self.dockedZerk1 = None
+        
+        # ------ Agent Give Port -----------
+        self.givePort.type = "Give"
+        self.givePort.player = True
+        self.givePort.enemy = False
+        self.givePort.direction = "Right"
+        self.givePort.objectType = "Token"
+        
+        # Reach to the Left
+        height = self.top - self.bottom
+        subHeight = height * AVAILABLE_PERCENT
+        myLeftX = self.left
+        myCenterY = self.center_y
+
+        self.givePort.playerDockMinX = myLeftX - (playerWidth / 2) - PLAYER_SLOP
+        self.givePort.playerDockMaxX = myLeftX - (playerWidth / 2) + PLAYER_SLOP
+        self.givePort.playerDockMinY = myCenterY - (subHeight / 2)
+        self.givePort.playerDockMaxY = myCenterY + (subHeight / 2)
+        
+        # N/A
+        self.givePort.enemyDockX = 0
+        self.givePort.enemyDockY = 0
+        self.givePort.enemyDockSlop = 0
+        
+        self.givePort.sourceMachine = self
+        
+        # ------ Agent Take Port -----------
+        self.takePort.type = "Take"
+        self.takePort.player = True
+        self.takePort.enemy = True
+        self.takePort.direction = "Up"
+        self.takePort.objectType = "Token"
+
+        # Reach Up
+        width = self.right - self.left
+        subWidth = width * AVAILABLE_PERCENT
+        myCenterX = self.center_x
+        myBottomY = self.bottom
+
+        # Player Reach Up
+        self.takePort.playerDockMinX = myCenterX - (subWidth / 2)
+        self.takePort.playerDockMaxX = myCenterX + (subWidth / 2)
+        self.takePort.playerDockMinY = myBottomY - (playerHeight / 2) - PLAYER_SLOP
+        self.takePort.playerDockMaxY = myBottomY - (playerHeight / 2) + PLAYER_SLOP
+        
+        # Enemy Reach Up
+        self.takePort.enemyDockX = myCenterX
+        self.takePort.enemyDockY = myBottomY - (playerHeight / 2)
+        self.takePort.enemyDockSlop = 2
+        
+        self.takePort.sourceMachine = self
+        
+        # ------ Distract Port #1 -----------
+        self.distractPort1.type = "Distract"
+        self.distractPort1.player = False
+        self.distractPort1.enemy = True
+        self.distractPort1.direction = "Left"
+        self.distractPort1.objectType = "Distract"
+        
+        # On the right
+        height = self.top - self.bottom
+        subHeight = height * AVAILABLE_PERCENT
+        myRightX = self.right
+        myCenterY = self.center_y
+
+        # N/A
+        self.distractPort1.playerDockMinX = 0
+        self.distractPort1.playerDockMaxX = 0
+        self.distractPort1.playerDockMinY = 0
+        self.distractPort1.playerDockMaxY = 0
+        
+        self.distractPort1.enemyDockX = myRightX + (playerWidth / 2)
+        self.distractPort1.enemyDockY = myCenterY
+        self.distractPort1.enemyDockSlop = 2
+        
+        self.distractPort1.sourceMachine = self
+    # end init
+    
+    def GetGivePort(self):
+        return self.givePort
+    # end GetGivePort
+    
+    def GetTakePort(self):
+        return self.takePort
+    # end GetGivePort
+
+    def PlayerGive(self, obj):
+        rc = False
+        if obj:
+            self.MakeCall()
+            self.Fill()
+            rc = True
+        return rc
+    # end PlayerGive
+
+    def PlayerTake(self):
+        obj = None
+        if 0 < len(self.heldTokenSpriteList):
+            obj = self.heldTokenSpriteList.pop()
+        return obj
+    # end PlayerTake
+
+    def EnemyGive(self, obj):
+        rc = False
+        # N/A
+        return rc
+    # end PlayerGive
+
+    def EnemyTake(self):
+        obj = None
+        if 0 < len(self.heldTokenSpriteList):
+            obj = self.heldTokenSpriteList.pop()
+        return obj
+    # end PlayerTake
+
+    def Fill(self):
+        if self.heldTokenMax > len(self.heldTokenSpriteList):
+            chance = ChangeUtils.myRandom(2)
+            if 0 == chance:
+                token = ChangeHeld.Token()
+                token.center_x = int(self.center_x)
+                token.center_y = int(self.center_y)
+                self.heldTokenSpriteList.append(token)
+    # end Fill
+
+    def DrawMachine(self):
+        super().DrawMachine()
+
+        # Draw held objects
+        if True == self.displayHeldToken:
+            self.heldTokenSpriteList.draw()
+    # end DrawMachine
+
+    def MakeCall(self):
+        print('MakeCall')
+        if self.pairedPhone:
+            if False == self.isActive and False == self.pairedPhone.isActive:
+                self.isActive = True
+                self.talkCountDown = self.talkCountStart
+                self.StartRinging()
+                self.pairedPhone.StartRinging()
+    # end MakeCall
+    
+    def IsDistracting(self):
+        return self.isActive
+    # end IsPlayering
+    
+    def FillEmptyDistractionPort(self, zerk):
+        rp = None
+        if None == self.dockedZerk1:
+            rp = self.distractPort1
+            self.dockedZerk1 = zerk
+        elif self.pairedPhone and None == self.pairedPhone.dockedZerk1:
+            rp = self.pairedPhone.distractPort1
+            self.pairedPhone.dockedZerk1 = zerk
+        return rp
+    # end FillEmptyDistractionPort
+
+    def GetTimeReminain(self):
+        rt = 0
+        if self.isActive:
+            rt = self.talkCountDown
+        elif self.pairedPhone and self.pairedPhone.isActive:
+            rt = self.pairedPhone.talkCountDown
+        return rt
+    # end GetTimeReminain
+
+    def StartRinging(self):
+        self.isRinging = True
+
+        # It starts automatically
+        # No off time, wait for zerk to get to dock
+        self.animator = ChangeUtils.SpriteAnimator(self, self.hungUpTexture, self.ringingTextureList, 100000, self.ringCountStart)
+    # end StartRinging
+    
+    def StopRinging(self):
+        self.isRinging = False
+        self.animator.Stop()
+    # end Stop Ringing
+
+    def HangUp(self):
+        self.texture = self.hungUpTexture
+        self.isOffHook = False
+        self.isTalking = False
+    # end HangUp
+
+    def PickUp(self):
+        self.StopRinging()
+        self.texture = self.offHookTexture
+        self.isOffHook = True
+        
+        # Either phone could be the last one picked up
+        if self.pairedPhone and self.pairedPhone.isOffHook:
+            if self.isActive:
+                self.isTalking = True
+            elif self.pairedPhone.isActive:
+                self.pairedPhone.isTalking = True
+    # end Pickup
+    
+    def UpdateMachine(self):
+        if self.isRinging:
+            self.animator.update()
+        elif self.isTalking:
+            self.talkCountDown -= 1
+            if 0 >= self.talkCountDown:
+                self.isActive = False
+                self.dockedZerk1 = None
+                self.HangUp()
+                if self.pairedPhone:
+                    self.pairedPhone.dockedZerk1 = None
+                    self.pairedPhone.HangUp()
+    # end UpdateMachine
+
+# end DriverPhone
 
 class ExitDoor(BaseMachine):
     def __init__(self, x, y, playerWidth, playerHeight):
@@ -991,7 +1243,6 @@ class ExitDoor(BaseMachine):
     
     def OpenDoor(self):
         if False == self.isOpen:
-            print('Changing door texture')
             self.specialPort = self.inactiveSpecialPort
             self.texture = self.openTexture
             self.isOpen = True
@@ -1003,6 +1254,7 @@ class ExitDoor(BaseMachine):
 
 # end ExitDoor
 
+# I'd like to create a DistractionMachine base class, but I can't justify it.
 class JukeBox(BaseMachine):
     def __init__(self, x, y, playerWidth, playerHeight):
         filename = "Resources/JukeBox.png"
@@ -1021,7 +1273,7 @@ class JukeBox(BaseMachine):
         self.dockedZerk1 = None
         self.dockedZerk2 = None
 
-        # ------ Agent Take Port -----------
+        # ------ Agent Give Port -----------
         self.givePort.type = "Give"
         self.givePort.player = True
         self.givePort.enemy = False
@@ -1053,7 +1305,7 @@ class JukeBox(BaseMachine):
         self.distractPort1.direction = "Left"
         self.distractPort1.objectType = "Distract"
         
-        # Reach to the Left
+        # On the right
         height = self.top - self.bottom
         subHeight = height * AVAILABLE_PERCENT
         myRightX = self.right
@@ -1078,7 +1330,7 @@ class JukeBox(BaseMachine):
         self.distractPort2.direction = "Left"
         self.distractPort2.objectType = "Distract"
         
-        # Reach to the Left
+        # Two to the right
         height = self.top - self.bottom
         subHeight = height * AVAILABLE_PERCENT
         myRightX = self.right
@@ -1154,7 +1406,6 @@ class JukeBox(BaseMachine):
     # end DrawMachine
 
     def StartJukeBox(self):
-        print('StartJukeBox')
         self.IsPlaying = True
         self.playCountDown = self.playCountStart
 
