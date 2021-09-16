@@ -25,6 +25,7 @@ import ChangeUtils
 import ChangeScoringView
 import ChangeLevel0
 import ChangeLevel2
+import ChangeLevel3
 
 
 SCREEN_WIDTH = 800
@@ -109,7 +110,7 @@ class GameView(arcade.View):
 
         if 1 == self.gameParam.level:
             self.BuildLevel1()
-        elif 3 <= self.gameParam.level:
+        elif 4 <= self.gameParam.level:
             self.BuildLevel1()
         else:
             if 0 == self.gameParam.level:
@@ -122,6 +123,14 @@ class GameView(arcade.View):
                     self.AllWallsSpriteList)
             elif 2 == self.gameParam.level:
                 ChangeLevel2.BuildLevel2(
+                    self.gameParam,
+                    self.PlayerSpriteList,
+                    self.ZerkSpriteList,
+                    self.MachineSpriteList,
+                    self.DistractionSpriteSubList,
+                    self.AllWallsSpriteList)
+            elif 3 == self.gameParam.level:
+                ChangeLevel3.BuildLevel3(
                     self.gameParam,
                     self.PlayerSpriteList,
                     self.ZerkSpriteList,
@@ -535,6 +544,10 @@ class GameView(arcade.View):
     
     # Check if the zerks are distracted by any of the machines
     def ZerkDistractions(self):
+        # Bug: If the player restarts the distraction while the zerks are already
+        # at the machine, the zerks do not get the new duration.  When their current
+        # duration ends, the animation ends, but the machine has not released them,
+        # so they stand (still) at the machine till the machine releases them.
         for distraction in self.DistractionSpriteSubList:
             if type(distraction) is ChangeMachine.JukeBox:
                 if True == distraction.IsDistracting():
@@ -544,6 +557,13 @@ class GameView(arcade.View):
                             if None != port:
                                 zerk.BecomeDistracted(distraction, port)
             elif type(distraction) is ChangeMachine.DriverPhone:
+                if True == distraction.IsDistracting():
+                    for zerk in self.ZerkSpriteList:
+                        if False == zerk.IsDistracted():
+                            port = distraction.FillEmptyDistractionPort(zerk)
+                            if None != port:
+                                zerk.BecomeDistracted(distraction, port)
+            if type(distraction) is ChangeMachine.PopcornMachine:
                 if True == distraction.IsDistracting():
                     for zerk in self.ZerkSpriteList:
                         if False == zerk.IsDistracted():
@@ -712,9 +732,10 @@ class MyGame(arcade.Window):
         print('setup MyGame')
         
         gameParam = ChangeUtils.GameParameters()
-        #gameParam.level = 0
+        gameParam.level = 0
         #gameParam.level = 1
-        gameParam.level = 2
+        #gameParam.level = 2
+        #gameParam.level = 3
         gameParam.state = "Welcome"
         
         #nextView = GameView(gameParam)

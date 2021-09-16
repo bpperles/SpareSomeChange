@@ -1,6 +1,6 @@
-# ChangeLevel2.py
-# Define function for creating objects for level 2
-# Working distraction phones!
+# ChangeLevel3.py
+# Define function for creating objects for level 3
+# Popcorn machine!
 
 # Imported libraries
 import arcade
@@ -20,15 +20,13 @@ PLAYER_GOAL_SIZE_X = 48
 PLAYER_GOAL_SIZE_Y = 64
 
 
-def BuildLevel2(gameParam,
+def BuildLevel3(gameParam,
                 PlayerSpriteList,
                 ZerkSpriteList,
                 MachineSpriteList,
                 DistractionSpriteSubList,
                 AllWallsSpriteList):
     # Build all sprites
-    print("b")
-    print(f'Level = {gameParam.level}')
     x = .1 * SCREEN_WIDTH
     y = .75 * SCREEN_HEIGHT
     player = ChangePlayer.Player(x, y)
@@ -76,16 +74,8 @@ def BuildLevel2(gameParam,
     MachineSpriteList.append(tokenMachine4)
     AllWallsSpriteList.append(tokenMachine4)
 
-    # Top left token machine
-    x = .1 * SCREEN_WIDTH
-    y = .9 * SCREEN_HEIGHT
-    tokenMachine4 = ChangeMachine.TokenMachine(x, y, "Left", PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
-    tokenMachine4.Fill()
-    MachineSpriteList.append(tokenMachine4)
-    AllWallsSpriteList.append(tokenMachine4)
-
     x = .35 * SCREEN_WIDTH
-    y = .5 * SCREEN_HEIGHT
+    y = .4 * SCREEN_HEIGHT
     PlayerTokenBin = ChangeMachine.PlayerTokenBin(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
     for ii in range(gameParam.tokensFromLastLevel):
         token = ChangeHeld.Token()
@@ -105,41 +95,35 @@ def BuildLevel2(gameParam,
     cashRegister.Fill()
     MachineSpriteList.append(cashRegister)
     AllWallsSpriteList.append(cashRegister)
-
-    x = .4 * SCREEN_WIDTH
-    y = .1 * SCREEN_HEIGHT
+    
+    x = .1 * SCREEN_WIDTH
+    y = .9 * SCREEN_HEIGHT
     safe = ChangeMachine.Safe(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
     MachineSpriteList.append(safe)
     AllWallsSpriteList.append(safe)
 
-    x = .18 * SCREEN_WIDTH
+    x = .65 * SCREEN_WIDTH
+    y = .9 * SCREEN_HEIGHT
+    popcornMachine = ChangeMachine.PopcornMachine(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
+    MachineSpriteList.append(popcornMachine)
+    DistractionSpriteSubList.append(popcornMachine)
+    AllWallsSpriteList.append(popcornMachine)
+
+    x = .1 * SCREEN_WIDTH
     y = .3 * SCREEN_HEIGHT
-    leftPhone = ChangeMachine.DriverPhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
+    leftPhone = ChangeMachine.DummyPhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
     leftPhone.Fill()
     MachineSpriteList.append(leftPhone)
-    DistractionSpriteSubList.append(leftPhone)
     AllWallsSpriteList.append(leftPhone)
 
-    x = .675 * SCREEN_WIDTH
-    y = .9 * SCREEN_HEIGHT
-    rightPhone = ChangeMachine.DriverPhone(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
-    rightPhone.Fill()
-    MachineSpriteList.append(rightPhone)
-    DistractionSpriteSubList.append(rightPhone)
-    AllWallsSpriteList.append(rightPhone)
-
-    # Pair the phones
-    rightPhone.pairedPhone = leftPhone
-    leftPhone.pairedPhone = rightPhone
-
     x = .55 * SCREEN_WIDTH
-    y = .5 * SCREEN_HEIGHT
+    y = .4 * SCREEN_HEIGHT
     ExitDoor = ChangeMachine.ExitDoor(x, y, PLAYER_GOAL_SIZE_X, PLAYER_GOAL_SIZE_Y)
     MachineSpriteList.append(ExitDoor)
     AllWallsSpriteList.append(ExitDoor)
 
     # For level 0, turning the helper arrows
-    #for machine in MachineSpriteList:
-    #    machine.displayPortHelper = True
+    for machine in MachineSpriteList:
+        machine.displayPortHelper = True
 
-# end BuildLevel0
+# end BuildLevel3

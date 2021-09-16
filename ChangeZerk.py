@@ -93,6 +93,14 @@ class Zerk(arcade.Sprite):
         self.talkTextureList.append(self.talkTexture)
         self.talkTextureList.append(self.defaultTexture)
 
+        self.climb0Texture = arcade.load_texture('Resources/zombie_climb0.png')
+        self.climb1Texture = arcade.load_texture('Resources/zombie_climb1.png')
+
+        self.clawGlassTextureList = []
+        self.clawGlassTextureList.append(self.climb0Texture)
+        self.clawGlassTextureList.append(self.climb0Texture)
+        self.clawGlassTextureList.append(self.climb1Texture)
+
     # end init
     
     def InitPathfinder(self, wallList, minX, maxX, minY, maxY):
@@ -228,6 +236,10 @@ class Zerk(arcade.Sprite):
                                 # We need to pick up on the phone we walked to
                                 if self.targetPort and self.targetPort.sourceMachine:
                                     self.targetPort.sourceMachine.PickUp()
+                            if type(self.targetMachine) is ChangeMachine.PopcornMachine:
+                                # Dance!
+                                duration = self.targetMachine.GetTimeReminain()
+                                self.ClawGlass(duration)
                             # end elif
                         else:
                             self.InteractWithMachine(self.targetPort)
@@ -335,6 +347,10 @@ class Zerk(arcade.Sprite):
     def Talk(self, duration):
         self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.talkTextureList, duration, 10)
     # end Talk    
+
+    def ClawGlass(self, duration):
+        self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.clawGlassTextureList, duration, 10)
+    # end ClawGlass
 
     def IsPickingNewTargets(self):
         rb = False

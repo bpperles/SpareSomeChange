@@ -1446,3 +1446,183 @@ class JukeBox(BaseMachine):
     # end UpdateMachine
 
 # end JukeBox
+
+class PopcornMachine(BaseMachine):
+    def __init__(self, x, y, playerWidth, playerHeight):
+        filename = "Resources/PopcornMachine.png"
+        scale = 1
+        super().__init__(filename, scale)
+
+        self.center_x = x
+        self.center_y = y
+
+        self.givePort = Port()
+        self.takePort = None
+
+        self.distractPort1 = Port()
+        self.distractPort2 = Port()
+        
+        self.dockedZerk1 = None
+        self.dockedZerk2 = None
+
+        # ------ Agent Give Port -----------
+        self.givePort.type = "Give"
+        self.givePort.player = True
+        self.givePort.enemy = False
+        self.givePort.direction = "Left"
+        self.givePort.objectType = "Token"
+        
+        # Reach to the Left
+        height = self.top - self.bottom
+        subHeight = height * AVAILABLE_PERCENT
+        myRightX = self.right
+        myCenterY = self.center_y
+
+        self.givePort.playerDockMinX = myRightX + (playerWidth / 2) - PLAYER_SLOP
+        self.givePort.playerDockMaxX = myRightX + (playerWidth / 2) + PLAYER_SLOP
+        self.givePort.playerDockMinY = myCenterY - (subHeight / 2)
+        self.givePort.playerDockMaxY = myCenterY + (subHeight / 2)
+        
+        # N/A
+        self.givePort.enemyDockX = 0
+        self.givePort.enemyDockY = 0
+        self.givePort.enemyDockSlop = 0
+        
+        self.givePort.sourceMachine = self
+        
+        # ------ Distract Port #1 -----------
+        self.distractPort1.type = "Distract"
+        self.distractPort1.player = False
+        self.distractPort1.enemy = True
+        self.distractPort1.direction = "Up"
+        self.distractPort1.objectType = "Distract"
+        
+        # Below to the left
+        myBottomY = self.bottom
+        myCenterX = self.center_x
+
+        # N/A
+        self.distractPort1.playerDockMinX = 0
+        self.distractPort1.playerDockMaxX = 0
+        self.distractPort1.playerDockMinY = 0
+        self.distractPort1.playerDockMaxY = 0
+        
+        self.distractPort1.enemyDockX = myCenterX - (playerWidth/2)
+        self.distractPort1.enemyDockY = myBottomY - (playerHeight/2)
+        self.distractPort1.enemyDockSlop = 2
+        
+        self.distractPort1.sourceMachine = self
+
+        # ------ Distract Port #2 -----------
+        self.distractPort2.type = "Distract"
+        self.distractPort2.player = False
+        self.distractPort2.enemy = True
+        self.distractPort2.direction = "Left"
+        self.distractPort2.objectType = "Distract"
+        
+        # Below to the right
+        myBottomY = self.bottom
+        myCenterX = self.center_x
+
+        # N/A
+        self.distractPort2.playerDockMinX = 0
+        self.distractPort2.playerDockMaxX = 0
+        self.distractPort2.playerDockMinY = 0
+        self.distractPort2.playerDockMaxY = 0
+        
+        self.distractPort2.enemyDockX = myCenterX + (playerWidth/2)
+        self.distractPort2.enemyDockY = myBottomY - (playerHeight/2)
+        self.distractPort2.enemyDockSlop = 2
+        
+        self.distractPort2.sourceMachine = self
+        
+        self.IsPlaying = False
+        self.playCountStart = 30*45
+        
+    # end init
+    
+    def GetGivePort(self):
+        return self.givePort
+    # end GetGivePort
+    
+    def GetTakePort(self):
+        return self.takePort
+    # end GetGivePort
+
+    def PlayerGive(self, obj):
+        rc = False
+        if None != obj:
+            if "Token" == obj.GetType():
+                self.StartPopping()
+                rc = True
+        return rc
+    # end PlayerGive
+
+    def PlayerTake(self):
+        obj = None
+        # N/A
+        return obj
+    # end PlayerTake
+
+    def EnemyGive(self, obj):
+        rc = False
+        # N/A
+        return rc
+    # end PlayerGive
+
+    def EnemyTake(self):
+        obj = None
+        # N/A
+        return obj
+    # end PlayerTake
+    
+    def Fill(self):
+        # N/A
+        x = 1
+    # end Fill
+
+    def DrawMachine(self):
+        super().DrawMachine()
+    # end DrawMachine
+
+    def StartPopping(self):
+        print('StartPopping')
+        self.IsPlaying = True
+        self.playCountDown = self.playCountStart
+
+        # Todo: Particals!
+    # end StartJukeBox
+    
+    def IsDistracting(self):
+        return self.IsPlaying
+    # end IsPlayering
+    
+    def FillEmptyDistractionPort(self, zerk):
+        rp = None
+        if None == self.dockedZerk1:
+            rp = self.distractPort1
+            self.dockedZerk1 = zerk
+        elif None == self.dockedZerk2:
+            rp = self.distractPort2
+            self.dockedZerk2 = zerk
+        return rp
+    # end FillEmptyDistractionPort
+
+    def GetTimeReminain(self):
+        return self.playCountDown
+    # end GetTimeReminain
+
+    def UpdateMachine(self):
+        if self.IsPlaying:
+            self.playCountDown -= 1
+            if 0 < self.playCountDown:
+                # Update particals
+                x = 1
+            else:
+                self.IsPlaying = False
+                self.dockedZerk1 = None
+                self.dockedZerk2 = None
+                # Remove particals
+    # end UpdateMachine
+
+# end PopcornMachine

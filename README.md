@@ -9,7 +9,7 @@ As the owner of a video arcade, your goal is to fill your token bin to earn enou
 Unlike most video games, the two enemy Zerks can't harm you, but if they fill up their token bin first, its game over.
 
 Status:
-Alpha Demo
+Beta
 
 How to launch:
  - The main function is in SpareSomeChange.py
@@ -52,18 +52,18 @@ By accessing the left side, you can put in bills to win (maybe) some tokens
 Zerk Bank:
 Zerk's put their tokens in their piggy bank. Too many and its game over.
 
-Exit: (Non-functional)
+Exit:
 Once you have 10 tokens in your bin, the exit will open. Access it from the bottom. Exiting is the only way to reset the Zerk bank.
 
 Distractions: These machines distract the Zerks, for a time...
 
 JuteBox: Put tokens in the right side.
 
-Pay Phone: If the left side is accessable, you can put in tokens.
+Pay Phone: If the level has two pay phones, you can put a token into the right side of either.
 
-Popcorn Machine: (Not yet implemented) Tokens can be put in the right side.
+Popcorn Machine: (Not yet animated) Tokens can be put in the right side.
 
-Level Rules (Not yet implemented)
+Level Rules: 
 When you exit the level, you will recieve points for each token in your upper bin (each token over 9). Once you aquire 9 points, you will advance to the next level. Since its a classic video game, levels loop forever, gradually getting harder.
 
 Uses Python Arcade Features:
@@ -84,19 +84,25 @@ What works:
 - Player can steal from Zerks
 - Jutebox will distract Zerk
 - Interaction animation for player and Zerks
+- Zerk's are animated while distracted
+- Welcome screen
+- Esc to pause, any other key to un-pause (need to change that)
+- Level and points displayed in game view
+- Player can exit
+- Tokens in upper bin become points
+- Enough points trigger the next level
+- Level 0: Tutorial level
+- Levels 1, 2, 3
 
 Missing Features:
 - Goal and mood based behavior for Zerks
 - Game over condition
-- Level exit and level advance
-- Level score screen
 - Coin deposit animations for Zerks (toss to bank, lob to bank, kick to bank, toss to Zerk)
-- Multiple levels
-- Movement animation for player and Zerks
+- Walk animation for player and Zerks
 - Drawer/door states for cash register and safe
 - Numeric token counter for Zerk bank
-- Finish distract machines: phone, popcorn maker
 - Token machine can only be refilled a number of times
+- More varied layout of machines between levels
 - Colored icons for machines
 - Sound
 - Attract screen

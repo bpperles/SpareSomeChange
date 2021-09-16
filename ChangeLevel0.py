@@ -27,8 +27,6 @@ def BuildLevel0(gameParam,
                 DistractionSpriteSubList,
                 AllWallsSpriteList):
     # Build all sprites
-    print("b")
-    print(f'Level = {gameParam.level}')
     x = .1 * SCREEN_WIDTH
     y = .75 * SCREEN_HEIGHT
     player = ChangePlayer.Player(x, y)
