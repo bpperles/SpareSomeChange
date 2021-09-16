@@ -18,7 +18,7 @@ Required Libraries:
  - Python
  - Arcade  https://api.arcade.academy/en/latest/
 
-How to Play
+How to Play:
 The game requires moving around resources to keep the tokens flowing while keeping the Zerks from getting their hands (?) on tokens.  Collect enough tokens to open the exit before the Zerks fill up their bin.
 
 The controls:
@@ -59,12 +59,12 @@ Distractions: These machines distract the Zerks, for a time...
 
 JuteBox: Put tokens in the right side.
 
-Pay Phone: If the level has two pay phones, you can put a token into the right side of either.
+Pay Phone: If the level has two pay phones, you can put a token into the left side of either.
 
 Popcorn Machine: (Not yet animated) Tokens can be put in the right side.
 
 Level Rules: 
-When you exit the level, you will recieve points for each token in your upper bin (each token over 9). Once you aquire 9 points, you will advance to the next level. Since its a classic video game, levels loop forever, gradually getting harder.
+When you exit the level, you will recieve points for each token in your upper bin (each token over 9). Once you aquire 9 points, you will advance to the next level. Since its a classic video game, levels loop forever, gradually getting harder.  (Not yet implemented)
 
 Uses Python Arcade Features:
 - Window, Views, draw/update
@@ -72,8 +72,8 @@ Uses Python Arcade Features:
 - Collision detection
 - Pathfinding
 
-Arcade level:
- - I need to look it up, but I down loaded it in Summer of 2021.
+Arcade Version:
+ - Developed on Arcade version 2.5.7
 
 What works:
 - Player movement and carrying of objects
@@ -91,20 +91,20 @@ What works:
 - Player can exit
 - Tokens in upper bin become points
 - Enough points trigger the next level
-- Level 0: Tutorial level
+- Level 0: Easier tutorial level with machine interaction hints
 - Levels 1, 2, 3
 
 Missing Features:
 - Goal and mood based behavior for Zerks
 - Game over condition
-- Coin deposit animations for Zerks (toss to bank, lob to bank, kick to bank, toss to Zerk)
-- Walk animation for player and Zerks
-- Drawer/door states for cash register and safe
-- Numeric token counter for Zerk bank
 - Token machine can only be refilled a number of times
 - More varied layout of machines between levels
+- Coin deposit animations for Zerks (toss to bank, lob to bank, kick to bank, toss to Zerk)
+- Drawer/door states for cash register and safe
+- Walk animation for player and Zerks
+- Numeric token counter for Zerk bank
 - Colored icons for machines
 - Sound
-- Attract screen
+- Better way of teaching players how to play
 - Demo mode
 - Invent new features: Zerks play video game, Zerks chaced by Roomba, etc
