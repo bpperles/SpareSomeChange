@@ -137,7 +137,7 @@ class ScoringView(arcade.View):
             x = 200
             y = 400
             fontSize = 30
-            text = "Press any key to START"
+            text = "Press any key to CONTINUE"
             arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
             
         if True == self.levelAdvanced:

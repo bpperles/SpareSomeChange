@@ -87,7 +87,7 @@ class SpriteAnimator():
 
 # Creates a popcorn pop-ing effect
 # (I don't don't how to apply gravity to the particles, so they have a very short lifecycle)
-class PopcornParticals():
+class PopcornParticles():
     def __init__(self, x, y, width, height):
 
         self.emitterList = []
@@ -99,7 +99,7 @@ class PopcornParticals():
         self.maxY = int(y + height/3)
         
         self.coolDownStart = 5
-        self.coolDownCount = self.coolDownStart
+        self.coolDownCount = 0
 
     # end init
     
@@ -107,7 +107,7 @@ class PopcornParticals():
         # File is 64x64
         cueBallTextureFile = "Resources/Popcorn.png"
         particalCount = 5
-        particalSpeed = 1.5
+        particlespeed = 1.5
         particalLifeTime = .5
         particalTextureScale = .125
         particalAlpha = 255
@@ -121,7 +121,7 @@ class PopcornParticals():
             emit_controller=arcade.EmitBurst(particalCount),
             particle_factory=lambda emitter: arcade.LifetimeParticle(
                 filename_or_texture=cueBallTextureFile,
-                change_xy=arcade.rand_in_circle((0.0, 0.0), particalSpeed),
+                change_xy=arcade.rand_in_circle((0.0, 0.0), particlespeed),
                 lifetime=particalLifeTime,
                 scale=particalTextureScale,
                 alpha=particalAlpha
@@ -146,4 +146,67 @@ class PopcornParticals():
             emitter.draw()
     # end on_draw
     
-# End PopcornParticals
+# End PopcornParticles
+
+# Simliar to the popcorn effect, add exploding tokens to the zerk bank
+# (I don't don't how to apply gravity to the particles, so they have a very short lifecycle)
+class TokenParticles():
+    def __init__(self, x, y, width, height):
+
+        self.emitterList = []
+
+        # Since particles go in all directions, use the inner two-thirds
+        self.minX = int(x - width/3)
+        self.maxX = int(x + width/3)
+        self.minY = int(y - height/3)
+        self.maxY = int(y + height/3)
+        
+        self.coolDownStart = 30
+        self.coolDownCount = 0
+
+    # end init
+    
+    def AddEmitter(self):
+        # File is 64x64
+        cueBallTextureFile = "Resources/Token.png"
+        particalCount = 7
+        particlespeed = 1
+        particalLifeTime = 1.15
+        particalTextureScale = .25
+        particalAlpha = 255
+
+        x = myRandom2(self.minX, self.maxX)
+        y = myRandom2(self.minY, self.maxY)
+
+        # Copied from Arcade partical examples
+        newEmitter = arcade.Emitter(
+            center_xy=(x,y),
+            emit_controller=arcade.EmitBurst(particalCount),
+            particle_factory=lambda emitter: arcade.LifetimeParticle(
+                filename_or_texture=cueBallTextureFile,
+                change_xy=arcade.rand_in_circle((0.0, 0.0), particlespeed),
+                lifetime=particalLifeTime,
+                scale=particalTextureScale,
+                alpha=particalAlpha
+            )
+        )
+        self.emitterList.append(newEmitter)
+    # End AddEmitter
+        
+    def update(self):
+        self.coolDownCount -= 1
+        if 0 >= self.coolDownCount:
+            # I don't really understand emitters, so just keep creating new emitters at new locations
+            self.AddEmitter()
+            self.coolDownCount = self.coolDownStart
+
+        for emitter in self.emitterList:
+            emitter.update()
+    # end update
+
+    def on_draw(self):
+        for emitter in self.emitterList:
+            emitter.draw()
+    # end on_draw
+    
+# End TokenParticles

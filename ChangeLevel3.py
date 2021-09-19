@@ -123,7 +123,7 @@ def BuildLevel3(gameParam,
     AllWallsSpriteList.append(ExitDoor)
 
     # For level 0, turning the helper arrows
-    for machine in MachineSpriteList:
-        machine.displayPortHelper = True
+    #for machine in MachineSpriteList:
+    #    machine.displayPortHelper = True
 
 # end BuildLevel3

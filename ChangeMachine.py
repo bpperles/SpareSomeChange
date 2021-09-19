@@ -505,9 +505,28 @@ class EnemyTokenBin(BaseMachine):
         self.center_y = y
 
         self.heldTokenSpriteList = arcade.SpriteList()
-        self.heldTokenMax = 9
+        self.heldTokenMax = 5
         self.displayHeldToken = True
+
+        self.animator = None
+
+        self.wiggleCycle = 5
+        self.wiggleDuration = 8 * self.wiggleCycle
         
+        self.defaultTexture = arcade.load_texture('Resources/ZerkBank.png')
+        self.wiggleTextureList = []
+        self.wiggleTextureList.append(arcade.load_texture('Resources/ZerkBankB.png'))
+        self.wiggleTextureList.append(arcade.load_texture('Resources/ZerkBank.png'))
+        
+        self.warningCycle = 5
+        self.warningDuration = 100000
+        
+        self.warningTextureList = []
+        self.warningTextureList.append(arcade.load_texture('Resources/ZerkBankRed.png'))
+        self.warningTextureList.append(arcade.load_texture('Resources/ZerkBank.png'))
+        
+        self.tokenParticles = None
+
         self.givePort = Port()
         self.takePort = None
         
@@ -536,16 +555,6 @@ class EnemyTokenBin(BaseMachine):
         self.givePort.enemyDockSlop = 2
         
         self.givePort.sourceMachine = self
-        
-        self.wiggleCycle = 5
-        self.wiggleDuration = 8 * self.wiggleCycle
-        
-        self.defaultTexture = arcade.load_texture('Resources/ZerkBank.png')
-        self.wiggleTextureList = []
-        self.wiggleTextureList.append(arcade.load_texture('Resources/ZerkBankB.png'))
-        self.wiggleTextureList.append(arcade.load_texture('Resources/ZerkBank.png'))
-        self.wiggleAnimator = None
-        
     # end init
     
     def GetGivePort(self):
@@ -585,10 +594,18 @@ class EnemyTokenBin(BaseMachine):
                 obj.center_x = self.center_x + oX
                 obj.center_y = self.center_y + oY
 
-                # Starts automatically
-                self.wiggleAnimator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.wiggleTextureList, self.wiggleDuration, self.wiggleCycle)
-                
                 self.heldTokenSpriteList.append(obj)
+                if len(self.heldTokenSpriteList) >= self.heldTokenMax:
+                    # Explode
+                    print("explode!")
+                    self.Explode()
+                elif len(self.heldTokenSpriteList) == (self.heldTokenMax-1):
+                    # Starts automatically
+                    self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.warningTextureList, self.warningDuration, self.warningCycle)
+                else:                        
+                    # Starts automatically
+                    self.animator = ChangeUtils.SpriteAnimator(self, self.defaultTexture, self.wiggleTextureList, self.wiggleDuration, self.wiggleCycle)
+                
                 rc = True
         return rc
     # end PlayerGive
@@ -606,10 +623,24 @@ class EnemyTokenBin(BaseMachine):
         if True == self.displayHeldToken:
             self.heldTokenSpriteList.draw()
             
-        if None != self.wiggleAnimator:
-            self.wiggleAnimator.update()
+        if None != self.animator:
+            self.animator.update()
+            
+        if self.tokenParticles:
+            # Todo: Over-ride Update method for this class
+            self.tokenParticles.update()
+            self.tokenParticles.on_draw()
     # end DrawMachine
 
+    # Check for game over condition
+    def IsFull(self):
+        if len(self.heldTokenSpriteList) >= self.heldTokenMax:
+            return True
+        return False
+    # IsFull
+
+    def Explode(self):
+        self.tokenParticles = ChangeUtils.TokenParticles(self.center_x, self.center_y, self.top-self.bottom, self.right-self.left)
 # end EnemyTokenBin
 
 # A place where the player can get bills.
@@ -1538,7 +1569,7 @@ class PopcornMachine(BaseMachine):
         
         self.IsPlaying = False
         self.playCountStart = 30*45
-        self.popcornParticals = None
+        self.popcornParticles = None
         
     # end init
     
@@ -1583,8 +1614,8 @@ class PopcornMachine(BaseMachine):
     # end Fill
 
     def DrawMachine(self):
-        if self.popcornParticals:
-            self.popcornParticals.on_draw()
+        if self.popcornParticles:
+            self.popcornParticles.on_draw()
         
         super().DrawMachine()
     # end DrawMachine
@@ -1594,8 +1625,8 @@ class PopcornMachine(BaseMachine):
         self.IsPlaying = True
         self.playCountDown = self.playCountStart
 
-        self.popcornParticals = ChangeUtils.PopcornParticals(self.center_x, self.center_y, self.top-self.bottom, self.right-self.left)
-        # Todo: Particals!
+        self.popcornParticles = ChangeUtils.PopcornParticles(self.center_x, self.center_y, self.top-self.bottom, self.right-self.left)
+        # Todo: Particles!
     # end StartJukeBox
     
     def IsDistracting(self):
@@ -1621,17 +1652,17 @@ class PopcornMachine(BaseMachine):
         if self.IsPlaying:
             self.playCountDown -= 1
             if 0 < self.playCountDown:
-                # Update particals
+                # Update particles
                 x = 1
             else:
                 # End pop-ing
                 self.IsPlaying = False
                 self.dockedZerk1 = None
                 self.dockedZerk2 = None
-                self.popcornParticals = None
+                self.popcornParticles = None
         
-        if self.popcornParticals:
-            self.popcornParticals.update()
+        if self.popcornParticles:
+            self.popcornParticles.update()
     # end UpdateMachine
 
 # end PopcornMachine

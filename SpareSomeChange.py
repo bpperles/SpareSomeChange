@@ -107,13 +107,22 @@ class GameView(arcade.View):
         self.WallSpriteList = arcade.SpriteList()
 
         self.AllWallsSpriteList = arcade.SpriteList()
+        
+        # Loop the levels
+        levelToBuild = 0
+        maxDefinedLevel = 3
+        if 0 < self.gameParam.level:
+            if 0 == self.gameParam.level % maxDefinedLevel:
+                levelToBuild = maxDefinedLevel
+            else:
+                levelToBuild = self.gameParam.level % maxDefinedLevel
 
-        if 1 == self.gameParam.level:
+        if 1 == levelToBuild:
             self.BuildLevel1()
-        elif 4 <= self.gameParam.level:
+        elif maxDefinedLevel < levelToBuild:
             self.BuildLevel1()
         else:
-            if 0 == self.gameParam.level:
+            if 0 == levelToBuild:
                 ChangeLevel0.BuildLevel0(
                     self.gameParam,
                     self.PlayerSpriteList,
@@ -121,7 +130,7 @@ class GameView(arcade.View):
                     self.MachineSpriteList,
                     self.DistractionSpriteSubList,
                     self.AllWallsSpriteList)
-            elif 2 == self.gameParam.level:
+            elif 2 == levelToBuild:
                 ChangeLevel2.BuildLevel2(
                     self.gameParam,
                     self.PlayerSpriteList,
@@ -129,7 +138,7 @@ class GameView(arcade.View):
                     self.MachineSpriteList,
                     self.DistractionSpriteSubList,
                     self.AllWallsSpriteList)
-            elif 3 == self.gameParam.level:
+            elif 3 == levelToBuild:
                 ChangeLevel3.BuildLevel3(
                     self.gameParam,
                     self.PlayerSpriteList,
@@ -436,26 +445,45 @@ class GameView(arcade.View):
         arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize, rotation=90)
 
         if "Paused" == self.gameParam.state:
-            x = 200
+            # Overload the screen with a transparent white
+            arcade.draw_lrtb_rectangle_filled(left=0,
+                                          right=SCREEN_WIDTH,
+                                          top=SCREEN_HEIGHT,
+                                          bottom=0,
+                                          color=arcade.color.WHITE + (200,))            
+            x = 220
             y = 300
             fontSize = 100
             text = "Paused"
-            arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+            arcade.draw_text(text, x, y, arcade.color.BLACK, fontSize)
         elif "GameOver" == self.gameParam.state:
-            x = 200
+            # Overload the screen with a transparent white
+            arcade.draw_lrtb_rectangle_filled(left=0,
+                                          right=SCREEN_WIDTH,
+                                          top=SCREEN_HEIGHT,
+                                          bottom=0,
+                                          color=arcade.color.WHITE + (200,))            
+            x = 130
             y = 300
             fontSize = 100
             text = "Game Over"
-            arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
+            arcade.draw_text(text, x, y, arcade.color.BLACK, fontSize)
+            x = 150
+            y = 200
+            fontSize = 30
+            text = "Press ESC to return to title screen"
+            arcade.draw_text(text, x, y, arcade.color.BLACK, fontSize)
 
     # end on_draw
     
     # Over-ride base class, called when key is pressed
     def on_key_press(self, key, modifiers):
         # https://api.arcade.academy/en/latest/arcade.key.html
+        print('keypress')
         if "Paused" == self.gameParam.state:
+            print('ispaused')
             self.gameParam.state = "Playing"
-        if "Playing" == self.gameParam.state:
+        elif "Playing" == self.gameParam.state:
             if key == arcade.key.UP:
                 self.up_pressed = True
             elif key == arcade.key.DOWN:
@@ -477,6 +505,13 @@ class GameView(arcade.View):
                 if self.PlayerTokenBinSprite:
                     self.gameParam.state = "ExitLevel"
                     self.gameParam.level += 1
+        elif "GameOver" == self.gameParam.state:
+            if key == arcade.key.ESCAPE:
+                # Return to title screen
+                nextView = WelcomeView(self.gameParam)
+                nextView.setup()
+                # A view has a pointer to the window that it is displayed in
+                self.window.show_view(nextView)
     # end on_key_press
 
     # Over-ride base class, called when key is released
@@ -580,15 +615,19 @@ class GameView(arcade.View):
             nextView.setup()
             self.window.show_view(nextView)
         elif "Playing" == self.gameParam.state:
-            if 10 <= len(self.PlayerTokenBinSprite.heldTokenSpriteList):
-            #if 1 <= len(self.PlayerTokenBinSprite.heldTokenSpriteList):
-                if self.ExitDoorSprite:
-                    if False == self.ExitDoorSprite.isOpen:
-                        print('Opening exit door')
-                        self.ExitDoorSprite.OpenDoor()
+            # Open the door if there are enough tokens
+            if self.PlayerTokenBinSprite:
+                if 10 <= len(self.PlayerTokenBinSprite.heldTokenSpriteList):
+                    if self.ExitDoorSprite:
+                        if False == self.ExitDoorSprite.isOpen:
+                            print('Opening exit door')
+                            self.ExitDoorSprite.OpenDoor()
+            # Check for Game Over case:
+            if self.ZerkBankSprite:
+                if self.ZerkBankSprite.IsFull():
+                    self.gameParam.state = "GameOver"
         elif "GameOver" == self.gameParam.state:
-            print('Found game over')
-            # todo
+            # Don't do anything, wait till the user hits a key
             x = 1
     # end CheckGameState
                     
@@ -703,11 +742,28 @@ class WelcomeView(arcade.View):
 
     # end on_draw
     
-    def on_key_press(self, symbol, modifiers):
+    def on_key_press(self, key, modifiers):
         # https://api.arcade.academy/en/latest/arcade.key.html
-        # Toggle views when any key is pressed
+        # Toggle views when any key is pressed,
+
+        # Use number presses to pick the level.
+        # Support the numbers on the keyboard and the number pad
+        if key == arcade.key.NUM_0 or key == arcade.key.KEY_0:
+            self.gameParam.level = 0
+        elif key == arcade.key.NUM_1 or key == arcade.key.KEY_1:
+            self.gameParam.level = 1
+        elif key == arcade.key.NUM_2 or key == arcade.key.KEY_2:
+            self.gameParam.level = 2
+        elif key == arcade.key.NUM_3 or key == arcade.key.KEY_3:
+            self.gameParam.level = 3
+        else:
+            # Default: Begin in the tutorial level
+            self.gameParam.level = 0
         
         self.gameParam.state = "Playing"
+        self.gameParam.points = 0
+        self.gameParam.tokensInBin = 0
+        self.gameParam.tokensFromLastLevel = 0
         
         nextView = GameView(self.gameParam)
         nextView.setup()
@@ -732,10 +788,10 @@ class MyGame(arcade.Window):
         print('setup MyGame')
         
         gameParam = ChangeUtils.GameParameters()
-        #gameParam.level = 0
+        gameParam.level = 0
         #gameParam.level = 1
         #gameParam.level = 2
-        gameParam.level = 3
+        #gameParam.level = 3
         gameParam.state = "Welcome"
         
         #nextView = GameView(gameParam)
