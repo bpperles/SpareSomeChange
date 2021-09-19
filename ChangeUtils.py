@@ -84,3 +84,66 @@ class SpriteAnimator():
                 self.cycleCountDown = self.cycleDuration
 
 # End SpriteAnimator
+
+# Creates a popcorn pop-ing effect
+# (I don't don't how to apply gravity to the particles, so they have a very short lifecycle)
+class PopcornParticals():
+    def __init__(self, x, y, width, height):
+
+        self.emitterList = []
+
+        # Since particles go in all directions, use the inner two-thirds
+        self.minX = int(x - width/3)
+        self.maxX = int(x + width/3)
+        self.minY = int(y - height/3)
+        self.maxY = int(y + height/3)
+        
+        self.coolDownStart = 5
+        self.coolDownCount = self.coolDownStart
+
+    # end init
+    
+    def AddEmitter(self):
+        # File is 64x64
+        cueBallTextureFile = "Resources/Popcorn.png"
+        particalCount = 5
+        particalSpeed = 1.5
+        particalLifeTime = .5
+        particalTextureScale = .125
+        particalAlpha = 255
+
+        x = myRandom2(self.minX, self.maxX)
+        y = myRandom2(self.minY, self.maxY)
+
+        # Copied from Arcade partical examples
+        newEmitter = arcade.Emitter(
+            center_xy=(x,y),
+            emit_controller=arcade.EmitBurst(particalCount),
+            particle_factory=lambda emitter: arcade.LifetimeParticle(
+                filename_or_texture=cueBallTextureFile,
+                change_xy=arcade.rand_in_circle((0.0, 0.0), particalSpeed),
+                lifetime=particalLifeTime,
+                scale=particalTextureScale,
+                alpha=particalAlpha
+            )
+        )
+        self.emitterList.append(newEmitter)
+    # End AddEmitter
+        
+    def update(self):
+        self.coolDownCount -= 1
+        if 0 >= self.coolDownCount:
+            # I don't really understand emitters, so just keep creating new emitters at new locations
+            self.AddEmitter()
+            self.coolDownCount = self.coolDownStart
+
+        for emitter in self.emitterList:
+            emitter.update()
+    # end update
+
+    def on_draw(self):
+        for emitter in self.emitterList:
+            emitter.draw()
+    # end on_draw
+    
+# End PopcornParticals

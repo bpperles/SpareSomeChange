@@ -732,10 +732,10 @@ class MyGame(arcade.Window):
         print('setup MyGame')
         
         gameParam = ChangeUtils.GameParameters()
-        gameParam.level = 0
+        #gameParam.level = 0
         #gameParam.level = 1
         #gameParam.level = 2
-        #gameParam.level = 3
+        gameParam.level = 3
         gameParam.state = "Welcome"
         
         #nextView = GameView(gameParam)

@@ -1538,6 +1538,7 @@ class PopcornMachine(BaseMachine):
         
         self.IsPlaying = False
         self.playCountStart = 30*45
+        self.popcornParticals = None
         
     # end init
     
@@ -1582,6 +1583,9 @@ class PopcornMachine(BaseMachine):
     # end Fill
 
     def DrawMachine(self):
+        if self.popcornParticals:
+            self.popcornParticals.on_draw()
+        
         super().DrawMachine()
     # end DrawMachine
 
@@ -1590,6 +1594,7 @@ class PopcornMachine(BaseMachine):
         self.IsPlaying = True
         self.playCountDown = self.playCountStart
 
+        self.popcornParticals = ChangeUtils.PopcornParticals(self.center_x, self.center_y, self.top-self.bottom, self.right-self.left)
         # Todo: Particals!
     # end StartJukeBox
     
@@ -1619,10 +1624,14 @@ class PopcornMachine(BaseMachine):
                 # Update particals
                 x = 1
             else:
+                # End pop-ing
                 self.IsPlaying = False
                 self.dockedZerk1 = None
                 self.dockedZerk2 = None
-                # Remove particals
+                self.popcornParticals = None
+        
+        if self.popcornParticals:
+            self.popcornParticals.update()
     # end UpdateMachine
 
 # end PopcornMachine
