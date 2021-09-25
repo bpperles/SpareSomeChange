@@ -19,7 +19,7 @@ Required Libraries:
  - Arcade  https://api.arcade.academy/en/latest/
 
 How to Play:
-The game requires moving around resources to keep the tokens flowing while keeping the Zerks from getting their hands (?) on tokens.  Collect enough tokens to open the exit before the Zerks fill up their bin.
+The game requires moving around resources to keep the tokens flowing while preventing the Zerks from getting their hands (?) on tokens.  Collect enough tokens to open the exit before the Zerks fill up their bin.
 
 The controls:
 Only the arrow keys are used. Multiple keys can be pressed down at the same time to move diagonaly.  To interact with a machine, tap the arrow key in the direction of the machine. If you walked up to the machine in that direction, you will have to release the key and hit it again.  (If your player raises her hand, you interacted with the machine.)
@@ -57,11 +57,11 @@ Once you have 10 tokens in your bin, the exit will open. Access it from the bott
 
 Distractions: These machines distract the Zerks, for a time...
 
-JuteBox: Put tokens in the right side.
+JukeBox: Put tokens in the right side.
 
 Pay Phone: If the level has two pay phones, you can put a token into the left side of either.
 
-Popcorn Machine: (Not yet animated) Tokens can be put in the right side.
+Popcorn Machine: Tokens can be put in the right side.
 
 Level Rules: 
 When you exit the level, you will recieve points for each token in your upper bin (each token over 9). Once you aquire 9 points, you will advance to the next level. Since its a classic video game, levels loop forever, gradually getting harder.  (Not yet implemented)
@@ -71,6 +71,7 @@ Uses Python Arcade Features:
 - Sprites
 - Collision detection
 - Pathfinding
+- Particles
 
 Arcade Version:
  - Developed on Arcade version 2.5.7
@@ -82,11 +83,11 @@ What works:
 - Zerks visit and interact with machines
 - Zerks take collision fee paths
 - Player can steal from Zerks
-- Jutebox will distract Zerk
+- Jukebox, paired phones, and popcorn machine will distract Zerk
 - Interaction animation for player and Zerks
 - Zerk's are animated while distracted
 - Welcome screen
-- Esc to pause, any other key to un-pause (need to change that)
+- Esc to pause, any key to un-pause
 - Level and points displayed in game view
 - Player can exit
 - Tokens in upper bin become points

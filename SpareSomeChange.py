@@ -479,7 +479,6 @@ class GameView(arcade.View):
     # Over-ride base class, called when key is pressed
     def on_key_press(self, key, modifiers):
         # https://api.arcade.academy/en/latest/arcade.key.html
-        print('keypress')
         if "Paused" == self.gameParam.state:
             print('ispaused')
             self.gameParam.state = "Playing"

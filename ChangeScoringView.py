@@ -147,6 +147,12 @@ class ScoringView(arcade.View):
             text = f"Advance to Level {self.gameParam.level}"
             arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
 
+        if 2 == self.gameParam.level:
+            x = 140
+            y = 20
+            fontSize = 15
+            text = f"Tip: If you press a number key on the title screen, it wil take you to that level!"
+            arcade.draw_text(text, x, y, arcade.color.WHITE, fontSize)
 
     # end on_draw
     
